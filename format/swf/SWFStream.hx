@@ -149,7 +149,7 @@ class SWFStream {
 	}
 	
 	
-	public function readAlign ():String {
+	public function readAlign () {
 		
 		switch (readByte ()) {
 			

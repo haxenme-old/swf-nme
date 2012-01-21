@@ -24,16 +24,17 @@ import nme.utils.ByteArray;
 class SWF {
 	
 	
+	public static var instances:Hash <SWF> = new Hash <SWF> ();
+	
 	public var backgroundColor (default, null):Int;
-	public var classNames (default, null):Array <Dynamic>;
 	public var frameRate (default, null):Float;
 	public var height (default, null):Int;
+	public var symbols:Hash <Int>;
 	public var width (default, null):Int;
 	
 	private var characterData:IntHash <Character>;
 	private var stream:SWFStream;
 	private var streamPositions:IntHash <Int>;
-	private var symbols:Hash <Int>;
 	private var version:Int;
 	
 	
@@ -42,7 +43,6 @@ class SWF {
 		stream = new SWFStream (data);
 		
 		characterData = new IntHash <Character> ();
-		classNames = new Array <String> ();
 		streamPositions = new IntHash <Int> ();
 		symbols = new Hash <Int> ();
 		
@@ -79,12 +79,6 @@ class SWF {
 			
 			stream.endTag();
 			position = stream.position;
-			
-		}
-		
-		for (className in symbols.keys ()) {
-			
-			classNames.push (className);
 			
 		}
 		
