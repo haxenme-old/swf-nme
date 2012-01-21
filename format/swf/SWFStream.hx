@@ -182,7 +182,7 @@ class SWFStream {
 	}
 	
 	
-	public function readBits (length:Int, signed:Bool = false):Int {
+	public function readBits (length:Int, isSigned:Bool = false):Int {
 		
 		var signBit = length - 1;
 		var result = 0;
@@ -209,7 +209,7 @@ class SWFStream {
 			
 		}
 		
-		if (signed) {
+		if (isSigned) {
 			
 			var mask = (1 << signBit);
 			
