@@ -1,0 +1,7 @@
+<project name="swf" url="http://www.joshuagranick.com" license="MIT">
+    <user name="elyon"/>
+    <tag v="cpp"/>
+    <tag v="flash"/>
+    <description>Provides support for parsing and rendering SWF content</description>
+    <version name="1.00">Initial version</version>
+</project>
