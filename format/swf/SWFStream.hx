@@ -34,7 +34,11 @@ class SWFStream {
 		
 		stream = bytes;
 		
-		var signature = String.fromCharCode (stream.readUnsignedByte ()) + String.fromCharCode (stream.readUnsignedByte ()) + String.fromCharCode (stream.readUnsignedByte ());
+		var signature = "";
+		
+		signature += String.fromCharCode (stream.readUnsignedByte ());
+		signature += String.fromCharCode (stream.readUnsignedByte ());
+		signature += String.fromCharCode (stream.readUnsignedByte ());
 		
 		if (signature != "FWS" && signature != "CWS") {
 			
