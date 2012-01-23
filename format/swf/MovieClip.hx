@@ -144,7 +144,7 @@ class MovieClip extends MovieClipBase
             {
                var depth_slot = frame_objs.get( a.mDepth );
 
-               if (depth_slot==null || depth_slot.mID != a.mID || a.mWaitingLoader)
+               if (depth_slot==null || depth_slot.id != a.mID || a.mWaitingLoader)
                {
                   // Add object to pool - if it's complete.
                   if (!a.mWaitingLoader)
@@ -165,9 +165,9 @@ class MovieClip extends MovieClipBase
                   // remove from our "todo" list
                   frame_objs.remove(a.mDepth);
 
-                  a.mIndex = depth_slot.FindClosestFrame(a.mIndex,mCurrentFrame);
-                  var attrib = depth_slot.mAttribs[a.mIndex];
-                  attrib.Apply(a.mObj);
+                  a.mIndex = depth_slot.findClosestFrame(a.mIndex,mCurrentFrame);
+                  var attrib = depth_slot.attributes[a.mIndex];
+                  attrib.apply(a.mObj);
                   new_active.push(a);
                }
             }
@@ -178,11 +178,11 @@ class MovieClip extends MovieClipBase
             {
                var slot = frame_objs.get(depth);
                var disp_object:flash.display.DisplayObject = null;
-               var pool = mObjectPool.get(slot.mID);
+               var pool = mObjectPool.get(slot.id);
                if (pool != null && pool.length > 0)
                {
                    disp_object = pool.pop();
-                   switch(slot.mCharacter)
+                   switch(slot.character)
                    {
                       case charSprite(sprite):
                          var clip:format.swf.MovieClip = untyped disp_object;
@@ -194,7 +194,7 @@ class MovieClip extends MovieClipBase
                else
                {               
                    //trace(count++);
-                   switch(slot.mCharacter)
+                   switch(slot.character)
                    {
                       case charSprite(sprite):
                          var movie = new format.swf.MovieClip(sprite);
@@ -222,7 +222,7 @@ class MovieClip extends MovieClipBase
  
                       case charEditText(text):
                          var t = new TextField();
-                         text.Apply(t);
+                         text.apply(t);
                          disp_object = t;
                          
                       case charBitmap(shape):
@@ -271,11 +271,11 @@ class MovieClip extends MovieClipBase
                if (!added)
                   addChild(disp_object);
 
-               var idx = slot.FindClosestFrame(0,mCurrentFrame);
-               slot.mAttribs[idx].Apply(disp_object);
+               var idx = slot.findClosestFrame(0,mCurrentFrame);
+               slot.attributes[idx].apply(disp_object);
 
                var act =
-                  { mObj:disp_object, mDepth:depth, mIndex:idx, mID:slot.mID, 
+                  { mObj:disp_object, mDepth:depth, mIndex:idx, mID:slot.id, 
                           mWaitingLoader:waiting_loader };
 
                new_active.push(act);

@@ -1,48 +1,65 @@
 package format.swf;
 
-import nme.geom.ColorTransform;
-import nme.geom.Matrix;
+
+import flash.display.DisplayObject;
+import flash.geom.ColorTransform;
+import flash.geom.Matrix;
 
 
-class DisplayAttributes
-{
-   public var mFrame:Int;
-   public var mCharacterID:Int;
-   public var mMatrix:Matrix;
-   public var mColorTransform:ColorTransform;
-   public var mRatio:Null<Int>;
-   public var mName:String;
-
-   public function new() { }
-
-   public function clone()
-   {
-      var n = new DisplayAttributes();
-      n.mFrame = mFrame;
-      n.mMatrix = mMatrix;
-      n.mColorTransform = mColorTransform;
-      n.mRatio = mRatio;
-      n.mName = mName;
-      n.mCharacterID = mCharacterID;
-      return n;
-   }
-
-   public function Apply(inObj:flash.display.DisplayObject)
-   {
-      if (mMatrix!=null)
-         inObj.transform.matrix = mMatrix.clone();
+class DisplayAttributes {
+	
+	
+	public var characterID:Int;
+	public var colorTransform:ColorTransform;
+	public var frame:Int;
+	public var matrix:Matrix;
+	public var name:String;
+	public var ratio:Null<Int>;
+	
+	
+	public function new () {
 		
-      //if (mName != "")
-		 inObj.name = mName;
-		 
-      if (mRatio!=null && Std.is(inObj,MorphObject))
-      {
-         var morph:MorphObject = untyped inObj;
-         return morph.SetRatio(mRatio);
-      }
-      return false;
-   }
+		
+		
+	}
+	
+	
+	public function apply (object:DisplayObject) {
+		
+		if (matrix != null) {
+			
+			object.transform.matrix = matrix.clone ();
+			
+		}
+		
+		object.name = name;
+		
+		if (ratio != null && Std.is (object, MorphObject)) {
+			
+			var morph:MorphObject = untyped object;
+			return morph.SetRatio (ratio);
+			
+		}
+		
+		return false;
+		
+	}
+	
+	
+	public function clone ():DisplayAttributes {
+		
+		var copy = new DisplayAttributes ();
+		
+		copy.frame = frame;
+		copy.matrix = matrix;
+		copy.colorTransform = colorTransform;
+		copy.ratio = ratio;
+		copy.name = name;
+		copy.characterID = characterID;
+		
+		return copy;
+		
+	}
+	
+	
 }
-
-
-typedef DisplayAttributesList = Array<DisplayAttributes>;

@@ -13,12 +13,9 @@ import format.swf.Sprite;
 import format.swf.StaticText;
 import format.swf.SWFStream;
 import format.swf.Tags;
-import nme.display.BitmapData;
-import nme.display.Loader;
-import nme.events.Event;
-import nme.events.EventDispatcher;
-import nme.geom.Rectangle;
-import nme.utils.ByteArray;
+import flash.display.BitmapData;
+import flash.geom.Rectangle;
+import flash.utils.ByteArray;
 
 
 class SWF {
@@ -128,9 +125,9 @@ class SWF {
 		
 		switch (getCharacter (symbols.get (className))) {
 			
-			case charBitmap (data):
+			case charBitmap (bitmap):
 				
-				return data.GetBitmap ();
+				return bitmap.bitmapData;
 			
 			default:
 				
@@ -157,10 +154,15 @@ class SWF {
 			
 		}
 		
-		switch (getCharacter(id)) {
+		switch (getCharacter (id)) {
 			
-			case charBitmap(data) : return data.GetBitmap();
-			default: throw "Non-bitmap character";
+			case charBitmap (data):
+				
+				return data.bitmapData;
+			
+			default:
+				
+				throw "Non-bitmap character";
 			
 		}
 		

@@ -2,73 +2,94 @@ package format.swf;
 
 import format.swf.Character;
 import format.swf.DisplayAttributes;
-import nme.geom.ColorTransform;
-import nme.geom.Matrix;
+import flash.geom.ColorTransform;
+import flash.geom.Matrix;
 
 
-
-class DepthSlot
-{
-   //static var sInstanceID = 1;
-
-   public var mID:Int;
-   public var mAttribs : DisplayAttributesList;
-   public var mCharacter : Character;
-
-   // This is used when building
-   var mCurrentAttrib : DisplayAttributes;
+class DepthSlot {
+	
+	
+	public var id:Int;
+	public var attributes:Array <DisplayAttributes>;
+	public var character:Character;
+	
+	private var cacheAttributes:DisplayAttributes;
 
 
-   public function new(inCharacter:Character,inCharacterID:Int,
-           inAttribs:DisplayAttributes)
-   {
-      mID = inCharacterID;
-      mAttribs = [];
-      mAttribs.push(inAttribs);
-      mCurrentAttrib = inAttribs;
-      mCharacter = inCharacter;
-   }
-
-   public function Move(inFrame:Int,
-                  inMatrix:Matrix, inColTx:ColorTransform,
-                  inRatio:Null<Int>)
-   {
-      mCurrentAttrib = mCurrentAttrib.clone();
-      mCurrentAttrib.mFrame = inFrame;
-      if (inMatrix!=null) mCurrentAttrib.mMatrix = inMatrix;
-      if (inColTx!=null) mCurrentAttrib.mColorTransform = inColTx;
-      if (inRatio!=null) mCurrentAttrib.mRatio = inRatio;
-      mAttribs.push(mCurrentAttrib);
-   }
-
-
-
-   public function FindClosestFrame(inHintFrame:Int,inFrame:Int)
-   {
-      var last = inHintFrame;
-      var n = mAttribs.length;
-      if (last>=mAttribs.length)
-         last = 0;
-      else if (last>0)
-      {
-         if ( mAttribs[last-1].mFrame > inFrame)
-            last = 0;
-      }
-
-      for(i in last...n)
-      {
-         if (mAttribs[i].mFrame > inFrame)
-         {
-            return last;
-         }
-         last = i;
-      }
-      
-      return last;
-   }
-
-
+	public function new (character:Character, characterID:Int, attributes:DisplayAttributes) {
+		
+		this.character = character;
+		id = characterID;
+		
+		this.attributes = [];
+		this.attributes.push (attributes);
+		
+		cacheAttributes = attributes;
+		
+	}
+	
+	
+	public function findClosestFrame (hintFrame:Int, frame:Int):Int {
+		
+		var last = hintFrame;
+		
+		if (last >= attributes.length) {
+			
+			last = 0;
+			
+		} else if (last > 0) {
+			
+			if (attributes[last - 1].frame > frame) {
+				
+				last = 0;
+				
+			}
+			
+		}
+		
+		for (i in last...attributes.length) {
+			
+			if (attributes[i].frame > frame) {
+				
+				return last;
+				
+			}
+			
+			last = i;
+			
+		}
+		
+		return last;
+		
+	}
+	
+	
+	public function move (frame:Int, matrix:Matrix, colorTransform:ColorTransform, ratio:Null <Int>):Void {
+		
+		cacheAttributes = cacheAttributes.clone ();
+		cacheAttributes.frame = frame;
+		
+		if (matrix != null) {
+			
+			cacheAttributes.matrix = matrix;
+			
+		}
+		
+		if (colorTransform != null) {
+			
+			cacheAttributes.colorTransform = colorTransform;
+			
+		}
+		
+		if (ratio != null) {
+			
+			cacheAttributes.ratio = ratio;
+			
+		}
+		
+		attributes.push (cacheAttributes);
+		
+	}
+	
+	
 }
-
-
-

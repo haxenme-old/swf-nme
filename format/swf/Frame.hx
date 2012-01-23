@@ -50,16 +50,16 @@ class Frame
       if (old!=null)
          throw("Overwriting non-empty depth");
       var attrib = new DisplayAttributes( );
-      attrib.mFrame = mFrame;
-      attrib.mMatrix = inMatrix;
-      attrib.mColorTransform = inColTx;
-      attrib.mRatio = inRatio;
+      attrib.frame = mFrame;
+      attrib.matrix = inMatrix;
+      attrib.colorTransform = inColTx;
+      attrib.ratio = inRatio;
 	  if (inName == null) {
-	      attrib.mName = "";
+	      attrib.name = "";
 	  } else {
-		  attrib.mName = inName;
+		  attrib.name = inName;
 	  }
-      attrib.mCharacterID = inCharID;
+      attrib.characterID = inCharID;
       var obj = new DepthSlot(inChar,inCharID,attrib);
       mObjects.set(inDepth,obj);
    }
@@ -72,7 +72,7 @@ class Frame
       if (obj==null)
          throw("depth has no object");
 
-      obj.Move(mFrame, inMatrix, inColTx, inRatio);
+      obj.move(mFrame, inMatrix, inColTx, inRatio);
    }
 
    public function GetFrame() { return mFrame; }
