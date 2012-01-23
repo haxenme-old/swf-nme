@@ -123,7 +123,7 @@ class StaticText
          {
             var tx = m.tx;
             inGfx.beginFill(rec.mColour,rec.mAlpha);
-            rec.mSWFFont.RenderGlyph(inGfx,rec.mGlyphs[i], m );
+            rec.mSWFFont.renderGlyph(inGfx,rec.mGlyphs[i], m );
             inGfx.endFill();
             m.tx += rec.mAdvances[i] * 0.05;
          }

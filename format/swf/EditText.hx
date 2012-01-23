@@ -68,7 +68,7 @@ class EditText {
 				
 				case charFont (font):
 					
-					textFormat.font = font.GetName ();
+					textFormat.font = font.getFontName ();
 				
 				default:
 					
