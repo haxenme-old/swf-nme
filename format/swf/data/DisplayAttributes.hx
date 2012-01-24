@@ -32,7 +32,7 @@ class DisplayAttributes {
 			
 		}
 		
-		if (colorTransform != null && colorTransform != object.transform.colorTransform) {
+		if (colorTransform != null) {
 			
 			object.transform.colorTransform = colorTransform;
 			
