@@ -32,6 +32,12 @@ class DisplayAttributes {
 			
 		}
 		
+		if (colorTransform != null && colorTransform != object.transform.colorTransform) {
+			
+			object.transform.colorTransform = colorTransform;
+			
+		}
+		
 		object.name = name;
 		
 		if (ratio != null && Std.is (object, MorphObject)) {

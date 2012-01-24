@@ -210,7 +210,7 @@ class Sprite {
 			
 			var symbolID = hasSymbol ? stream.readID () : 0;
 			var matrix = hasMatrix ? stream.readMatrix () : null;
-			var colorTransform = hasColorTransform ? stream.readColorTransform (version > 2) : null;
+			var colorTransform = hasColorTransform ? stream.readColorTransform (true) : null;
 			var ratio:Null<Int> = hasRatio ? stream.readUInt16 () : null;
 			
 			if (hasName || (hasImage && hasSymbol)) {
