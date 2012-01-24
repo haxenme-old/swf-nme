@@ -103,7 +103,11 @@ class Shape {
 					
 					// The case where newStyles==true seems to have some
 					//  additional data (bitmap?) for embeded line styles.
-					newStyles = false;
+					
+					//newStyles = false;
+					
+					// Forcing newStyles to false was causing incorrect rendering
+					// Will have to keep an eye out for this additional data?
 					
 				}
 				
