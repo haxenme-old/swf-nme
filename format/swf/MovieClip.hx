@@ -35,7 +35,7 @@ class MovieClip extends MovieClipBase {
 	#end
 	
 	
-	public function new (data:format.swf.Sprite = null) {
+	public function new (data:Sprite = null) {
 		
 		super ();
 		
@@ -182,7 +182,7 @@ class MovieClip extends MovieClipBase {
 							
 							case charSprite (data):
 								
-								var clip:format.swf.MovieClip = untyped displayObject;
+								var clip:MovieClip = cast displayObject;
 								clip.gotoAndPlay (1);
 							
 							default:
@@ -196,7 +196,7 @@ class MovieClip extends MovieClipBase {
 							
 							case charSprite(sprite):
 								
-								var movie = new format.swf.MovieClip (sprite);
+								var movie = new MovieClip (sprite);
 								displayObject = movie;
 							
 							case charShape(shape):

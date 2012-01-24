@@ -36,7 +36,7 @@ class DisplayAttributes {
 		
 		if (ratio != null && Std.is (object, MorphObject)) {
 			
-			var morph:MorphObject = untyped object;
+			var morph:MorphObject = cast object;
 			return morph.setRatio (ratio);
 			
 		}
