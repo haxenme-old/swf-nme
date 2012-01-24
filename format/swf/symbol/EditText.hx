@@ -1,13 +1,13 @@
-package format.swf;
+package format.swf.symbol;
 
 
 import flash.geom.Rectangle;
 import flash.text.TextField;
+import flash.text.TextFieldAutoSize;
 import flash.text.TextFieldType;
 import flash.text.TextFormat;
-import flash.text.TextFieldAutoSize;
+import format.swf.data.SWFStream;
 import format.SWF;
-import format.swf.SWFStream;
 
 
 class EditText {
@@ -64,9 +64,9 @@ class EditText {
 			
 			var fontID = stream.readID ();
 			
-			switch (swf.getCharacter (fontID)) {
+			switch (swf.getSymbol (fontID)) {
 				
-				case charFont (font):
+				case fontSymbol (font):
 					
 					textFormat.font = font.getFontName ();
 				

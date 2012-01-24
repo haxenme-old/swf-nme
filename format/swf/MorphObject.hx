@@ -2,6 +2,7 @@ package format.swf;
 
 
 import flash.display.Sprite;
+import format.swf.symbol.MorphShape;
 
 
 class MorphObject extends Sprite {

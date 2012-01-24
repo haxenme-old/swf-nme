@@ -1,21 +1,21 @@
 package format;
 
 
-import format.swf.Bitmap;
-import format.swf.Character;
-import format.swf.EditText;
-import format.swf.Font;
-import format.swf.Frame;
-import format.swf.MorphShape;
-import format.swf.MovieClip;
-import format.swf.Shape;
-import format.swf.Sprite;
-import format.swf.StaticText;
-import format.swf.SWFStream;
-import format.swf.Tags;
 import flash.display.BitmapData;
 import flash.geom.Rectangle;
 import flash.utils.ByteArray;
+import format.swf.data.Frame;
+import format.swf.data.SWFStream;
+import format.swf.data.Tags;
+import format.swf.symbol.Bitmap;
+import format.swf.symbol.EditText;
+import format.swf.symbol.Font;
+import format.swf.symbol.MorphShape;
+import format.swf.symbol.Sprite;
+import format.swf.symbol.Shape;
+import format.swf.symbol.StaticText;
+import format.swf.symbol.Symbol;
+import format.swf.MovieClip;
 
 
 class SWF {
@@ -29,7 +29,7 @@ class SWF {
 	public var symbols:Hash <Int>;
 	public var width (default, null):Int;
 	
-	private var characterData:IntHash <Character>;
+	private var symbolData:IntHash <Symbol>;
 	private var stream:SWFStream;
 	private var streamPositions:IntHash <Int>;
 	private var version:Int;
@@ -39,7 +39,7 @@ class SWF {
 		
 		stream = new SWFStream (data);
 		
-		characterData = new IntHash <Character> ();
+		symbolData = new IntHash <Symbol> ();
 		streamPositions = new IntHash <Int> ();
 		symbols = new Hash <Int> ();
 		
@@ -98,9 +98,9 @@ class SWF {
 			
 		}
 		
-		switch (getCharacter (id)) {
+		switch (getSymbol (id)) {
 			
-			case charSprite (data):
+			case spriteSymbol (data):
 				
 				return new MovieClip (data);
 			
@@ -123,9 +123,9 @@ class SWF {
 			
 		}
 		
-		switch (getCharacter (symbols.get (className))) {
+		switch (getSymbol (symbols.get (className))) {
 			
-			case charBitmap (bitmap):
+			case bitmapSymbol (bitmap):
 				
 				return bitmap.bitmapData;
 			
@@ -140,46 +140,15 @@ class SWF {
 	}
 	
 	
-	public function getBitmapDataID (id:Int):BitmapData {
-		
-		if (id == 0xffff) {
-			
-			return null;
-			
-		}
+	public function getSymbol (id:Int) {
 		
 		if (!streamPositions.exists (id)) {
 			
-			throw("Bitmap not defined: " + id);
+			throw "Invalid symbol ID (" + id + ")";
 			
 		}
 		
-		switch (getCharacter (id)) {
-			
-			case charBitmap (data):
-				
-				return data.bitmapData;
-			
-			default:
-				
-				throw "Non-bitmap character";
-			
-		}
-		
-		return null;
-		
-	}
-	
-	
-	public function getCharacter (id:Int) {
-		
-		if (!streamPositions.exists (id)) {
-			
-			throw "Invalid character ID (" + id + ")";
-			
-		}
-		
-		if (!characterData.exists (id)) {
+		if (!symbolData.exists (id)) {
 			
 			var cachePosition = stream.position;
 			stream.pushTag ();
@@ -225,7 +194,7 @@ class SWF {
 			
 		}
 		
-		return characterData.get (id);
+		return symbolData.get (id);
 		
 	}
 	
@@ -233,7 +202,7 @@ class SWF {
 	private inline function readBitmap (lossless:Bool, version:Int):Void {
 		
 		var id = stream.readID ();
-		characterData.set (id, charBitmap (new Bitmap (stream, lossless, version)));
+		symbolData.set (id, bitmapSymbol (new Bitmap (stream, lossless, version)));
 		
 	}
 	
@@ -241,7 +210,7 @@ class SWF {
 	private inline function readEditText (version:Int):Void {
 		
 		var id = stream.readID ();
-		characterData.set (id, charEditText (new EditText (this, stream, version)));
+		symbolData.set (id, editTextSymbol (new EditText (this, stream, version)));
 		
 	}
 	
@@ -259,7 +228,7 @@ class SWF {
 	private inline function readFont (version:Int):Void {
 		
 		var id = stream.readID ();
-		characterData.set (id, charFont (new Font (stream, version)));
+		symbolData.set (id, fontSymbol (new Font (stream, version)));
 		
 	}
 	
@@ -267,7 +236,7 @@ class SWF {
 	private inline function readMorphShape (version:Int):Void {
 		
 		var id = stream.readID ();
-		characterData.set (id, charMorphShape (new MorphShape (this, stream, version)));
+		symbolData.set (id, morphShapeSymbol (new MorphShape (this, stream, version)));
 		
 	}
 	
@@ -275,7 +244,7 @@ class SWF {
 	private inline function readShape (version:Int):Void {
 		
 		var id = stream.readID ();
-		characterData.set (id, charShape (new Shape (this, stream, version)));
+		symbolData.set (id, shapeSymbol (new Shape (this, stream, version)));
 		
 	}
 	
@@ -347,7 +316,7 @@ class SWF {
 			
 		}
 		
-		characterData.set (id, charSprite (sprite));
+		symbolData.set (id, spriteSymbol (sprite));
 		
 	}
 	
@@ -355,7 +324,7 @@ class SWF {
 	private inline function readText (version:Int):Void {
 		
 		var id = stream.readID ();
-		characterData.set (id, charStaticText (new StaticText (this, stream, version)));
+		symbolData.set (id, staticTextSymbol (new StaticText (this, stream, version)));
 		
 	}
 	

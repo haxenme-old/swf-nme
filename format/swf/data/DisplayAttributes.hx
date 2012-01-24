@@ -1,4 +1,4 @@
-package format.swf;
+package format.swf.data;
 
 
 import flash.display.DisplayObject;
@@ -9,12 +9,12 @@ import flash.geom.Matrix;
 class DisplayAttributes {
 	
 	
-	public var characterID:Int;
 	public var colorTransform:ColorTransform;
 	public var frame:Int;
 	public var matrix:Matrix;
 	public var name:String;
 	public var ratio:Null<Int>;
+	public var symbolID:Int;
 	
 	
 	public function new () {
@@ -55,7 +55,7 @@ class DisplayAttributes {
 		copy.colorTransform = colorTransform;
 		copy.ratio = ratio;
 		copy.name = name;
-		copy.characterID = characterID;
+		copy.symbolID = symbolID;
 		
 		return copy;
 		

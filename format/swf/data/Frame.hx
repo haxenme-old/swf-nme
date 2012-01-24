@@ -1,11 +1,9 @@
-package format.swf;
+package format.swf.data;
 
 
-import format.swf.Character;
-import format.swf.DepthSlot;
-import format.swf.DisplayAttributes;
-import flash.geom.Matrix;
 import flash.geom.ColorTransform;
+import flash.geom.Matrix;
+import format.swf.symbol.Symbol;
 
 
 class Frame {
@@ -71,7 +69,7 @@ class Frame {
 	}
 	
 	
-	public function place (characterID:Int, character:Character, depth:Int, matrix:Matrix, colorTransform:ColorTransform, ratio:Null<Int>, name:Null<String>):Void {
+	public function place (symbolID:Int, symbol:Symbol, depth:Int, matrix:Matrix, colorTransform:ColorTransform, ratio:Null<Int>, name:Null<String>):Void {
 		
 		var previousObject = objects.get (depth);
 		
@@ -97,9 +95,9 @@ class Frame {
 			
 		}
 		
-		attributes.characterID = characterID;
+		attributes.symbolID = symbolID;
 		
-		var object = new DepthSlot (character, characterID, attributes);
+		var object = new DepthSlot (symbolID, symbol, attributes);
 		objects.set (depth, object);
 		
 	}

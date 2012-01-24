@@ -1,18 +1,18 @@
-package format.swf;
+package format.swf.data;
 
 
-import nme.geom.ColorTransform;
-import nme.geom.Matrix;
-import nme.geom.Rectangle;
-import nme.display.CapsStyle;
-import nme.display.InterpolationMethod;
-import nme.display.JointStyle;
-import nme.display.LineScaleMode;
-import nme.display.SpreadMethod;
-import nme.text.TextFormatAlign;
-import nme.utils.ByteArray;
-import nme.utils.Endian;
-import nme.utils.IDataInput;
+import flash.display.CapsStyle;
+import flash.display.InterpolationMethod;
+import flash.display.JointStyle;
+import flash.display.LineScaleMode;
+import flash.display.SpreadMethod;
+import flash.geom.ColorTransform;
+import flash.geom.Matrix;
+import flash.geom.Rectangle;
+import flash.text.TextFormatAlign;
+import flash.utils.ByteArray;
+import flash.utils.Endian;
+import flash.utils.IDataInput;
 
 
 class SWFStream {

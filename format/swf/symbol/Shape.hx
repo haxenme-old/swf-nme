@@ -1,4 +1,4 @@
-package format.swf;
+package format.swf.symbol;
 
 
 import flash.display.GradientType;
@@ -6,7 +6,7 @@ import flash.display.Graphics;
 import flash.display.JointStyle;
 import flash.geom.Matrix;
 import flash.geom.Rectangle;
-import format.swf.SWFStream;
+import format.swf.data.SWFStream;
 import format.SWF;
 
 
@@ -480,7 +480,22 @@ class Shape {
 				var repeat = fill == ftBitmapRepeat || fill == ftBitmapRepeatSmooth;
 				var smooth = fill == ftBitmapRepeatSmooth || fill == ftBitmapClippedSmooth;
 				
-				var bitmap = swf.getBitmapDataID (id);
+				var bitmap = null;
+				
+				if (id != 0xffff) {
+					
+					switch (swf.getSymbol (id)) {
+						
+						case bitmapSymbol (data):
+							
+							bitmap = data.bitmapData;
+						
+						default:
+							
+						
+					}
+					
+				}
 				
 				if (bitmap != null) {
 					
@@ -501,7 +516,20 @@ class Shape {
 						
 						if (bitmap == null) {
 							
-							bitmap = s.getBitmapDataID (id);
+							if (id != 0xffff) {
+								
+								switch (s.getSymbol (id)) {
+									
+									case bitmapSymbol (data):
+										
+										bitmap = data.bitmapData;
+									
+									default:
+										
+									
+								}
+								
+							}
 							
 							if (bitmap == null) {
 								

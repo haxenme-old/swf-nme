@@ -1,13 +1,13 @@
-package format.swf;
+package format.swf.symbol;
 
 
-import format.swf.SWFStream;
-import format.SWF;
 import flash.display.GradientType;
 import flash.display.Graphics;
 import flash.display.JointStyle;
 import flash.geom.Matrix;
 import flash.geom.Rectangle;
+import format.swf.data.SWFStream;
+import format.SWF;
 
 
 class MorphShape {
@@ -299,6 +299,7 @@ class MorphShape {
 							//mCommands.push( function(g:Graphics,f:Float)
 							//{ g.moveTo(x+(px-x)*f, y+(py-y)*f); } );
 							edgeFound = false;
+							
 						}
 					
 					case meLine (meCX, meCY, meX, meY):
@@ -308,6 +309,7 @@ class MorphShape {
 						x = meX;
 						y = meY;
 						isLine = true;
+						
 						// trace("  pop line:" + x + "," + y);
 					
 					case meCurve (meCX, meCY, meX, meY):
@@ -569,7 +571,22 @@ class MorphShape {
 				// bitmap fill
 				
 				var id = stream.readID ();
-				var bitmap = swf.getBitmapDataID (id);
+				var bitmap = null;
+				
+				if (id != 0xffff) {
+					
+					switch (swf.getSymbol (id)) {
+						
+						case bitmapSymbol (data):
+							
+							bitmap = data.bitmapData;
+						
+						default:
+							
+						
+					}
+					
+				}
 				
 				stream.alignBits ();
 				
@@ -617,7 +634,20 @@ class MorphShape {
 						
 						if (bitmap == null) {
 							
-							bitmap = s.getBitmapDataID (id);
+							if (id != 0xffff) {
+								
+								switch (s.getSymbol (id)) {
+									
+									case bitmapSymbol (data):
+										
+										bitmap = data.bitmapData;
+									
+									default:
+										
+									
+								}
+								
+							}
 							
 							if (bitmap == null) {
 								

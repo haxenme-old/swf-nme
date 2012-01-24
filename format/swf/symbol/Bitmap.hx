@@ -1,10 +1,11 @@
-package format.swf;
+package format.swf.symbol;
 
 
 import flash.display.BitmapData;
 import flash.events.Event;
 import flash.geom.Rectangle;
 import flash.utils.ByteArray;
+import format.swf.data.SWFStream;
 
 #if flash
 import flash.display.Loader;
@@ -40,10 +41,11 @@ class Bitmap {
 			
 			var width = stream.readUInt16 ();
 			var height = stream.readUInt16 ();
+			var tableSize = 0;
 			
 			if (format == 3) {
 				
-				var tableSize = stream.readByte () + 1;
+				tableSize = stream.readByte () + 1;
 				
 			}
 			
@@ -90,7 +92,7 @@ class Bitmap {
 			
 			if (version == 2) {
 				
-				var size = stream.getBytesLeft();
+				var size = stream.getBytesLeft ();
 				buffer = stream.readBytes (size);
 				
 			} else if (version == 3) {

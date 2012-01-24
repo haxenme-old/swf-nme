@@ -1,9 +1,9 @@
-package format.swf;
+package format.swf.symbol;
 
 
-import format.swf.SWFStream;
 import flash.display.Graphics;
 import flash.geom.Matrix;
+import format.swf.data.SWFStream;
 
 
 class Font {

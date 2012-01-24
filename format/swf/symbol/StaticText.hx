@@ -1,10 +1,11 @@
-package format.swf;
+package format.swf.symbol;
 
 
 import flash.display.Graphics;
-import flash.geom.Rectangle;
 import flash.geom.Matrix;
-import format.swf.SWFStream;
+import flash.geom.Rectangle;
+import format.swf.data.SWFStream;
+import format.swf.symbol.Symbol;
 import format.SWF;
 
 
@@ -45,11 +46,11 @@ class StaticText {
 			if (hasFont) {
 				
 				var fontID = stream.readID ();
-				var character = swf.getCharacter (fontID);
+				var symbol = swf.getSymbol (fontID);
 				
-				switch (character) {
+				switch (symbol) {
 					
-					case charFont (f):
+					case fontSymbol (f):
 						
 						font = f;
 					

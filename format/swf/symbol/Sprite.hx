@@ -1,14 +1,13 @@
-package format.swf;
+package format.swf.symbol;
 
 
 import flash.display.BlendMode;
 import flash.filters.BitmapFilter;
 import flash.geom.ColorTransform;
 import flash.geom.Matrix;
-import format.swf.SWFStream;
-import format.swf.Tags;
-import format.swf.Character;
-import format.swf.Frame;
+import format.swf.data.Frame;
+import format.swf.data.SWFStream;
+import format.swf.data.Tags;
 import format.SWF;
 
 
@@ -153,8 +152,8 @@ class Sprite {
 		
 		if (version == 1) {
 			
-			var id = stream.readID ();
-			var character = swf.getCharacter (id);
+			var symbolID = stream.readID ();
+			var symbol = swf.getSymbol (symbolID);
 			var depth = stream.readDepth ();
 			var matrix = stream.readMatrix ();
 			
@@ -166,7 +165,7 @@ class Sprite {
 				
 			}
 			
-			frame.place (id, character, depth, matrix, colorTransform, null, null);
+			frame.place (symbolID, symbol, depth, matrix, colorTransform, null, null);
 			
 		} else if (version == 2 || version == 3) {
 			
@@ -178,7 +177,7 @@ class Sprite {
 			var hasRatio = stream.readBool ();
 			var hasColorTransform = stream.readBool ();
 			var hasMatrix = stream.readBool ();
-			var hasCharacter = stream.readBool ();
+			var hasSymbol = stream.readBool ();
 			var move = stream.readBool ();
 			
 			var hasImage = false;
@@ -209,12 +208,12 @@ class Sprite {
 				
 			}
 			
-			var cid = hasCharacter ? stream.readID () : 0;
+			var symbolID = hasSymbol ? stream.readID () : 0;
 			var matrix = hasMatrix ? stream.readMatrix () : null;
 			var colorTransform = hasColorTransform ? stream.readColorTransform (version > 2) : null;
 			var ratio:Null<Int> = hasRatio ? stream.readUInt16 () : null;
 			
-			if (hasName || (hasImage && hasCharacter)) {
+			if (hasName || (hasImage && hasSymbol)) {
 				
 				name = stream.readString ();
 				
@@ -289,10 +288,10 @@ class Sprite {
 			
 			if (move) {
 				
-				if (hasCharacter) {
+				if (hasSymbol) {
 					
 					frame.remove (depth);
-					frame.place (cid, swf.getCharacter (cid), depth, matrix, colorTransform, ratio, name);
+					frame.place (symbolID, swf.getSymbol (symbolID), depth, matrix, colorTransform, ratio, name);
 					
 				} else {
 					
@@ -302,7 +301,7 @@ class Sprite {
 				
 			} else {
 				
-				frame.place (cid, swf.getCharacter (cid), depth, matrix, colorTransform, ratio, name);
+				frame.place (symbolID, swf.getSymbol (symbolID), depth, matrix, colorTransform, ratio, name);
 				
 			}
 			

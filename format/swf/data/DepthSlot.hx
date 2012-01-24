@@ -1,25 +1,25 @@
-package format.swf;
+package format.swf.data;
 
-import format.swf.Character;
-import format.swf.DisplayAttributes;
+
 import flash.geom.ColorTransform;
 import flash.geom.Matrix;
+import format.swf.symbol.Symbol;
 
 
 class DepthSlot {
 	
 	
-	public var id:Int;
 	public var attributes:Array <DisplayAttributes>;
-	public var character:Character;
+	public var symbol:Symbol;
+	public var symbolID:Int;
 	
 	private var cacheAttributes:DisplayAttributes;
 
 
-	public function new (character:Character, characterID:Int, attributes:DisplayAttributes) {
+	public function new (symbolID:Int, symbol:Symbol, attributes:DisplayAttributes) {
 		
-		this.character = character;
-		id = characterID;
+		this.symbolID = symbolID;
+		this.symbol = symbol;
 		
 		this.attributes = [];
 		this.attributes.push (attributes);

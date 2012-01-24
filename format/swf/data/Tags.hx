@@ -1,4 +1,4 @@
-package format.swf;
+package format.swf.data;
 
 
 class Tags {

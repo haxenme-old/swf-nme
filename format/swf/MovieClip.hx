@@ -1,13 +1,13 @@
 package format.swf;
 
 
-import format.SWF;
-import format.swf.Sprite;
-import format.swf.Frame;
 import flash.display.DisplayObject;
 import flash.display.Shape;
 import flash.events.Event;
 import flash.text.TextField;
+import format.swf.data.Frame;
+import format.swf.symbol.Sprite;
+import format.SWF;
 
 
 #if flash
@@ -130,18 +130,18 @@ class MovieClip extends MovieClipBase {
 					
 					var depthSlot = frameObjects.get (activeObject.depth);
 					
-					if (depthSlot == null || depthSlot.id != activeObject.id || activeObject.waitingLoader) {
+					if (depthSlot == null || depthSlot.symbolID != activeObject.symbolID || activeObject.waitingLoader) {
 						
 						// Add object to pool - if it's complete.
 						
 						if (!activeObject.waitingLoader) {
 							
-							var pool = objectPool.get (activeObject.id);
+							var pool = objectPool.get (activeObject.symbolID);
 							
 							if (pool == null) {
 								
 								pool = new List <DisplayObject> ();
-								objectPool.set (activeObject.id, pool);
+								objectPool.set (activeObject.symbolID, pool);
 								
 							}
 							
@@ -172,15 +172,15 @@ class MovieClip extends MovieClipBase {
 					
 					var slot = frameObjects.get (depth);
 					var displayObject:DisplayObject = null;
-					var pool = objectPool.get (slot.id);
+					var pool = objectPool.get (slot.symbolID);
 					
 					if (pool != null && pool.length > 0) {
 						
 						displayObject = pool.pop ();
 						
-						switch (slot.character) {
+						switch (slot.symbol) {
 							
-							case charSprite (data):
+							case spriteSymbol (data):
 								
 								var clip:MovieClip = cast displayObject;
 								clip.gotoAndPlay (1);
@@ -192,14 +192,14 @@ class MovieClip extends MovieClipBase {
 						
 					} else {               
 						
-						switch (slot.character) {
+						switch (slot.symbol) {
 							
-							case charSprite(sprite):
+							case spriteSymbol (sprite):
 								
 								var movie = new MovieClip (sprite);
 								displayObject = movie;
 							
-							case charShape(shape):
+							case shapeSymbol (shape):
 								
 								var s = new Shape ();
 								s.cacheAsBitmap = true; // temp fix
@@ -207,30 +207,30 @@ class MovieClip extends MovieClipBase {
 								waitingLoader = shape.render (s.graphics);
 								displayObject = s;
 							
-							case charMorphShape (morphData):
+							case morphShapeSymbol (morphData):
 								
 								var morph = new MorphObject (morphData);
 								//morph_data.Render(new nme.display.DebugGfx(),0.5);
 								displayObject = morph;
 							
-							case charStaticText (text):
+							case staticTextSymbol (text):
 								
 								var s = new Shape();
 								s.cacheAsBitmap = true; // temp fix
 								text.render (s.graphics);
 								displayObject = s;
 							
-							case charEditText (text):
+							case editTextSymbol (text):
 								
 								var t = new TextField ();
 								text.apply (t);
 								displayObject = t;
 							
-							case charBitmap (shape):
+							case bitmapSymbol (shape):
 								
 								throw("Adding bitmap?");
 							
-							case charFont(font):
+							case fontSymbol (font):
 								
 								throw("Adding font?");
 							
@@ -290,7 +290,7 @@ class MovieClip extends MovieClipBase {
 					var idx = slot.findClosestFrame (0, mCurrentFrame);
 					slot.attributes[idx].apply (displayObject);
 					
-					var act = { object: displayObject, depth: depth, index: idx, id: slot.id, waitingLoader: waitingLoader };
+					var act = { object: displayObject, depth: depth, index: idx, symbolID: slot.symbolID, waitingLoader: waitingLoader };
 					
 					newActiveObjects.push (act);
 					depthChanged = true;
@@ -335,11 +335,12 @@ class MovieClip extends MovieClipBase {
 }
 
 
-typedef ActiveObject =
-{
+typedef ActiveObject = {
+	
 	var object:DisplayObject;
 	var depth:Int;
-	var id:Int;
+	var symbolID:Int;
 	var index:Int;
 	var waitingLoader:Bool;
+	
 }
