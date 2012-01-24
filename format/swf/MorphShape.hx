@@ -1,666 +1,827 @@
 package format.swf;
 
+
 import format.swf.SWFStream;
 import format.SWF;
-import nme.display.Graphics;
+import flash.display.GradientType;
+import flash.display.Graphics;
+import flash.display.JointStyle;
+import flash.geom.Matrix;
+import flash.geom.Rectangle;
 
-import nme.geom.Rectangle;
-import nme.geom.Matrix;
-import nme.display.JointStyle;
-import nme.display.GradientType;
 
-
-typedef MorphRenderFunc = Graphics -> Float -> Void;
-typedef MorphRenderFuncList = Array<MorphRenderFunc>;
-
-enum MorphEdge
-{
-   meStyle( func: Graphics -> Float -> Void );
-   meMove(x:Float, y:Float);
-   meLine(cx:Float, cy:Float, x:Float, y:Float);
-   meCurve(cx:Float, cy:Float, x:Float, y:Float);
+class MorphShape {
+	
+	
+	// TODO: make common with shape.hx
+	private static var ftSolid  = 0x00;
+	private static var ftLinear = 0x10;
+	private static var ftRadial = 0x12;
+	private static var ftRadialF= 0x13;
+	private static var ftBitmapRepeat  = 0x40;
+	private static var ftBitmapClipped = 0x41;
+	private static var ftBitmapRepeatR = 0x42;
+	private static var ftBitmapClippedR = 0x43;
+	
+	private var bounds0:Rectangle;
+	private var bounds1:Rectangle;
+	private var commands:Array <MorphRenderCommand>;
+	private var edgeBounds0:Rectangle;
+	private var edgeBounds1:Rectangle;
+	private var hasNonScaled:Bool;
+	private var hasScaled:Bool;
+	private var swf:SWF;
+	private var waitingLoader:Bool;
+	
+	
+	public function new (swf:SWF, stream:SWFStream, version:Int) {
+		
+		this.swf = swf;
+		
+		stream.alignBits ();
+		
+		commands = [];
+		bounds0 = stream.readRect ();
+		bounds1 = stream.readRect ();
+		waitingLoader = false;
+		
+		if (version == 2) {
+			
+			stream.alignBits ();
+			
+			edgeBounds0 = stream.readRect ();
+			edgeBounds1 = stream.readRect ();
+			
+			stream.alignBits ();
+			stream.readBits (6);
+			
+			hasNonScaled = stream.readBool ();
+			hasScaled = stream.readBool ();
+			
+		} else {
+			
+			edgeBounds0 = bounds0;
+			edgeBounds1 = bounds1;
+			
+			hasScaled = true;
+			hasNonScaled = true;
+			
+		}
+		
+		stream.alignBits ();
+		
+		var offset = stream.readInt ();
+		var endStart = stream.getBytesLeft () - offset;
+		
+		var fillStyles = readFillStyles (stream, version);
+		var lineStyles = readLineStyles (stream, version);
+		
+		stream.alignBits ();
+		
+		var fillBits = stream.readBits (4);
+		var lineBits = stream.readBits (4);
+		
+		var edges = new List <MorphEdge> ();
+		
+		var penX = 0.0;
+		var penY = 0.0;
+		
+		while (true) {
+			
+			var edge = stream.readBool ();
+			
+			if (!edge) {
+				
+				var newStyles = stream.readBool ();
+				var newLineStyle = stream.readBool ();
+				var newFillStyle1 = stream.readBool ();
+				var newFillStyle0 = stream.readBool ();
+				var moveTo = stream.readBool ();
+				
+				if (!moveTo && !newStyles && !newLineStyle && !newFillStyle1 && !newFillStyle0) {
+					
+					break;
+					
+				}
+				
+				if (true) {
+					
+					// The case where new_styles==true seems to have some
+				   //  additional data (bitmap?) for embeded line styles.
+				   newStyles = false;
+					
+				}
+				
+				// Style changed record ...
+				if (moveTo) {
+					
+					var bits = stream.readBits (5);
+					penX = stream.readTwips (bits);
+					penY = stream.readTwips (bits);
+					edges.add (meMove (penX, penY));
+					
+				}
+				
+				if (newFillStyle0) {
+					
+					var fillStyle = stream.readBits (fillBits);
+					
+					if (fillStyle >= fillStyles.length) {
+						
+						throw ("Invalid fill style");
+						
+					}
+					
+					edges.add (meStyle (fillStyles[fillStyle]));
+					
+				}
+				
+				if (newFillStyle1) {
+					
+					var fillStyle = stream.readBits (fillBits);
+					
+					if (fillStyle >= fillStyles.length) {
+						
+						throw ("Invalid fill style");
+						
+					}
+					
+					edges.add (meStyle (fillStyles[fillStyle]));
+					
+				}
+				
+				if (newLineStyle) {
+					
+					var lineStyle = stream.readBits (lineBits);
+					
+					if (lineStyle >= lineStyles.length) {
+						
+						throw ("Invalid line style: " + lineStyle + "/" + lineStyles.length + " (" + lineBits + ")");
+					
+					}
+					
+					edges.add (meStyle (lineStyles[lineStyle]));
+					
+				}
+				
+			} else {
+				
+				// straight
+				if (stream.readBool ()) {
+					
+					var deltaBits = stream.readBits (4) + 2;
+					
+					var x0 = penX;
+					var y0 = penY;
+					
+					if (stream.readBool ()) {
+						
+						penX += stream.readTwips (deltaBits);
+						penY += stream.readTwips (deltaBits);
+						
+					} else if (stream.readBool ()) {
+						
+						penY += stream.readTwips (deltaBits);
+						
+					} else {
+						
+						penX += stream.readTwips (deltaBits);
+						
+					}
+					
+					edges.add (meLine ((penX + x0) * 0.5, (penY + y0) * 0.5, penX, penY));
+					
+				} else {
+					
+					// Curved ...
+					var deltaBits = stream.readBits (4) + 2;
+					var cx = penX + stream.readTwips (deltaBits);
+					var cy = penY + stream.readTwips (deltaBits);
+					var px = cx + stream.readTwips (deltaBits);
+					var py = cy + stream.readTwips (deltaBits);
+					// Can't push "pen_x/y" in closure because it uses a reference
+					//  to the member variable, not a copy of the current value.
+					penX = px;
+					penY = py;
+					edges.add (meCurve (cx, cy, penX, penY));
+					
+				}
+			}
+		}
+		
+		// Ok, now read the second half of the shape
+		
+		penX = 0.0;
+		penY = 0.0;
+		stream.alignBits ();
+		
+		if (endStart != stream.getBytesLeft ()) {
+			
+			throw ("End offset mismatch");
+			
+		}
+		
+		fillBits = stream.readBits (4);
+		lineBits = stream.readBits (4);
+		
+		if (fillBits != 0 || lineBits != 0) {
+			
+			throw ("Unexpected style data in morph");
+			
+		}
+		
+		while (true) {
+			
+			var edge = stream.readBool ();
+			
+			if (!edge) {
+				
+				var newStyles = stream.readBool ();
+				var newLineStyle = stream.readBool ();
+				var newFillStyle1 = stream.readBool ();
+				var newFillStyle0 = stream.readBool ();
+				var moveTo = stream.readBool ();
+				
+				if (newLineStyle || newFillStyle0 || newFillStyle1 || newStyles) {
+					
+					throw ("Style change in Morph");
+					
+				}
+				
+				// End-of-shape - Done !
+				if (!moveTo) {
+					
+					break;
+					
+				}
+				
+			}
+			
+			// Get start entry ...
+			var x:Float = 0;
+			var y:Float = 0;
+			var cx:Float = 0;
+			var cy:Float = 0;
+			var isMove = false;
+			var isCurve = false;
+			var isLine = false;
+			
+			var edgeFound = false;
+			
+			while (!edgeFound) {
+				
+				var original = edges.pop ();
+				if (original == null) {
+					
+					throw "Too few edges in first shape";
+					
+				}
+				
+				edgeFound = true;
+				
+				switch (original) {
+					
+					case meMove (meX, meY):
+						
+						x = meX;
+						y = meY;
+						isMove = true;
+						
+						// here we have a "moveTo" in the first list and a "lineTo"
+						// in the second.  Combine these to a "move", and find the
+						// next line entry ...
+						//  ... or maybe just ignore it.
+						
+						if (edge) {
+							
+							var px = penX;
+							var py = penX;
+							//mCommands.push( function(g:Graphics,f:Float)
+							//{ g.moveTo(x+(px-x)*f, y+(py-y)*f); } );
+							edgeFound = false;
+						}
+					
+					case meLine (meCX, meCY, meX, meY):
+						
+						cx = meCX;
+						cy = meCY;
+						x = meX;
+						y = meY;
+						isLine = true;
+						// trace("  pop line:" + x + "," + y);
+					
+					case meCurve (meCX, meCY, meX, meY):
+						
+						cx = meCX;
+						cy = meCY;
+						x = meX;
+						y = meY;
+						isCurve = true;
+						// trace("  pop curve");
+						
+					case meStyle (command):
+						
+						commands.push (command);
+						edgeFound = false;
+						// trace("  pop style");
+						
+				}
+				
+			}
+			
+			if (!edge) {
+				
+				if (!isMove) {
+					
+					throw ("MorphShape: mismatched move");
+					
+				}
+				
+				var bits = stream.readBits (5);
+				penX = stream.readTwips (bits);
+				penY = stream.readTwips (bits);
+				var px = penX;
+				var py = penY;
+				
+				commands.push (function (g:Graphics, f:Float) { 
+					
+					g.moveTo(x + (px - x) * f, y + (py - y) * f); 
+					
+				});
+				
+			} else {
+				
+				// straight
+				if (stream.readBool ()) {
+					
+					var deltaBits = stream.readBits (4) + 2;
+					
+					var x0 = penX;
+					var y0 = penY;
+					
+					if (stream.readBool ()) {
+						
+						penX += stream.readTwips (deltaBits);
+						penY += stream.readTwips (deltaBits);
+						
+					} else if (stream.readBool ()) {
+						
+						penY += stream.readTwips (deltaBits);
+						
+					} else {
+						
+						penX += stream.readTwips (deltaBits);
+						
+					}
+					
+					var px = penX;
+					var py = penY;
+					
+					if (!isLine) {
+						
+						var cx2 = (px + x0) * 0.5;
+						var cy2 = (py + y0) * 0.5;
+						
+						commands.push (function (g:Graphics, f:Float) {
+							
+							g.curveTo(cx + (cx2 - cx) * f, cy + (cy2 - cy) * f, x + (px - x) * f, y + (py - y) * f);
+							
+						});
+						
+					} else {
+						
+						commands.push (function (g:Graphics, f:Float) { 
+							
+							g.lineTo(x + (px - x) * f, y + (py - y) * f);
+							
+						});
+						
+					}
+					
+				} else {
+					
+					// Curved ...
+					
+					var deltaBits = stream.readBits (4) + 2;
+					var cx2 = penX + stream.readTwips (deltaBits);
+					var cy2 = penY + stream.readTwips (deltaBits);
+					var px = cx2 + stream.readTwips (deltaBits);
+					var py = cy2 + stream.readTwips (deltaBits);
+					
+					// Can't push "pen_x/y" in closure because it uses a reference
+					//  to the member variable, not a copy of the current value.
+					
+					penX = px;
+					penX = py;
+					
+					commands.push (function (g:Graphics, f:Float) {
+						
+						g.curveTo(cx + (cx2 - cx) * f, cy + (cy2 - cy) * f, x + (px - x) * f, y + (py - y) * f);
+						
+					});
+					
+				}
+				
+			}
+			
+		}
+		
+		for (edge in edges) {
+			
+			switch (edge) {
+				
+				case meStyle (command):
+					
+					commands.push (command);
+				
+				default:
+					
+					throw ("Edge count mismatch");
+				
+			}
+			
+		}
+		
+		swf = null;
+		
+		// Render( new nme.display.DebugGfx());
+		
+	}
+	
+	
+	private static function interpolateColor (color0:Int, color1:Int, f:Float):Int {
+		
+		var r0 = (color0 >> 16) & 0xff;
+		var g0 = (color0 >> 8) & 0xff;
+		var b0 = (color0) & 0xff;
+		
+		return (Std.int (r0 + (((color1 >> 16) & 0xff) - r0) * f) << 16) | (Std.int (g0 + (((color1 >> 8) & 0xff) - g0) * f) << 8) | (Std.int (b0 + (((color1) & 0xff) - b0) * f));
+		
+	}
+	
+	
+	private static function interpolateMatrix (matrix0:Matrix, matrix1:Matrix, f:Float):Matrix {
+		
+		var matrix = new Matrix ();
+		
+		matrix.a = matrix0.a + (matrix1.a - matrix0.a) * f;
+		matrix.b = matrix0.b + (matrix1.b - matrix0.b) * f;
+		matrix.c = matrix0.c + (matrix1.c - matrix0.c) * f;
+		matrix.d = matrix0.d + (matrix1.d - matrix0.d) * f;
+		matrix.tx = matrix0.tx + (matrix1.tx - matrix0.tx) * f;
+		matrix.ty = matrix0.ty + (matrix1.ty - matrix0.ty) * f;
+		
+		return matrix;
+		
+	}
+	
+	
+	private function readFillStyles (stream:SWFStream, version:Int):Array <MorphRenderCommand> {
+		
+		var result = new Array <MorphRenderCommand> ();
+		
+		// Special null fill-style
+		result.push (function (g:Graphics, f:Float) {
+			
+			g.endFill();
+			
+		});
+		
+		var count = stream.readArraySize (true);
+		
+		for (i in 0...count) {
+			
+			var fill = stream.readByte ();
+			
+			if (fill == ftSolid) {
+				
+				var RGB0 = stream.readRGB ();
+				var A0 = stream.readByte () / 255.0;
+				var RGB1 = stream.readRGB ();
+				var A1 = stream.readByte () / 255.0;
+				var dA = A1 - A0;
+				
+				result.push (function (g:Graphics, f:Float) {
+					
+					g.beginFill (interpolateColor (RGB0, RGB1, f), (A0 + dA * f));
+					
+				});
+				
+			} else if ((fill & 0x10) != 0) {
+				
+				// Gradient
+				
+				var matrix0 = stream.readMatrix ();
+				
+				stream.alignBits ();
+				
+				var matrix1 = stream.readMatrix ();
+				
+				stream.alignBits ();
+				
+				//var spread = inStream.ReadSpreadMethod();
+				//var interp = inStream.ReadInterpolationMethod();
+				
+				var numColors = stream.readBits (4);
+				
+				var colors0 = [];
+				var colors1 = [];
+				var alphas0 = [];
+				var alphas1 = [];
+				var ratios0 = [];
+				var ratios1 = [];
+				
+				for (i in 0...numColors) {
+					
+					ratios0.push (stream.readByte ());
+					colors0.push (stream.readRGB ());
+					alphas0.push (stream.readByte () / 255.0);
+					ratios1.push (stream.readByte ());
+					colors1.push (stream.readRGB ());
+					alphas1.push (stream.readByte () / 255.0);
+					
+				}
+				
+				//var focus = fill==ftRadialF ?  inStream.ReadByte()/255.0 : 0.0;
+				//var type = fill==ftLinear ? nme.display.GradientType.LINEAR :
+				//nme.display.GradientType.RADIAL;
+				
+				result.push (function (g:Graphics, f:Float) {
+					
+					var cols = [];
+					var alphas = [];
+					var ratios = [];
+					
+					for (i in 0...numColors) {
+						
+						cols.push (interpolateColor(colors0[i], colors1[i], f));
+						alphas.push (alphas0[i] + (alphas1[i] - alphas0[i]) * f);
+						ratios.push (ratios0[i] + (ratios1[i] - ratios0[i]) * f);
+						
+					}
+					
+					g.beginGradientFill (GradientType.LINEAR, cols, alphas, ratios, interpolateMatrix(matrix0, matrix1, f));
+					
+				});
+				
+			} else if ((fill & 0x40) != 0) {
+				
+				// bitmap fill
+				
+				var id = stream.readID ();
+				var bitmap = swf.getBitmapDataID (id);
+				
+				stream.alignBits ();
+				
+				var matrix0 = stream.readMatrix ();
+				
+				// Not too sure about these.
+				// A scale of (20,20) is 1 pixel-per-unit.
+				matrix0.a *= 0.05;
+				matrix0.b *= 0.05;
+				matrix0.c *= 0.05;
+				matrix0.d *= 0.05;
+				
+				stream.alignBits ();
+				
+				var matrix1 = stream.readMatrix ();
+				
+				// Not too sure about these.
+				// A scale of (20,20) is 1 pixel-per-unit.
+				matrix1.a *= 0.05;
+				matrix1.b *= 0.05;
+				matrix1.c *= 0.05;
+				matrix1.d *= 0.05;
+				
+				stream.alignBits ();
+				
+				//var repeat = fill == ftBitmapRepeat || fill==ftBitmapRepeatR;
+				//var smooth = fill == ftBitmapRepeatR || fill ==ftBitmapClippedR;
+				
+				if (bitmap != null) {
+					
+					result.push (function (g:Graphics, f:Float) {
+						
+						g.beginBitmapFill (bitmap, interpolateMatrix (matrix0, matrix1, f));
+						
+					});
+					
+				} else {
+					
+					// May take some time for bitmap to load ...
+					
+					var s = swf;
+					var me = this;
+					
+					result.push (function (g:Graphics, f:Float) {
+						
+						if (bitmap == null) {
+							
+							bitmap = s.getBitmapDataID (id);
+							
+							if (bitmap == null) {
+								
+								me.waitingLoader = true;
+								g.endFill ();
+								
+								return;
+								
+							} else {
+								
+								me = null;
+								
+							}
+							
+						}
+						
+						g.beginBitmapFill (bitmap, interpolateMatrix (matrix0, matrix1, f));
+						
+					});
+					
+				}
+				
+			}
+			
+		}
+		
+		return result;
+		
+	}
+	
+	
+	private function readLineStyles (stream:SWFStream, version:Int):Array <MorphRenderCommand> {
+		
+		var result = new Array <MorphRenderCommand> ();
+		
+		// Special null line-style
+		result.push (function (g:Graphics, f:Float) {
+			
+			g.lineStyle(null);
+			
+		});
+		
+		var numStyles = stream.readArraySize (true);
+		
+		for (i in 0...numStyles) {
+			
+			if (version == 1) {
+				
+				stream.alignBits ();
+				
+				var w0 = stream.readDepth () * 0.05;
+				var w1 = stream.readDepth () * 0.05;
+				var RGB0 = stream.readRGB ();
+				var A0 = stream.readByte () / 255.0;
+				var RGB1 = stream.readRGB ();
+				var A1 = stream.readByte () / 255.0;
+				
+				result.push (function (g:Graphics, f:Float) { 
+					
+					g.lineStyle (w0 + (w1 - w0) * f, interpolateColor (RGB0, RGB1, f), A0 + (A1 - A0) * f);
+					
+				});
+				
+			} else {
+				
+				// MorphLinestyle 2
+				
+				stream.alignBits ();
+				
+				var w0 = stream.readDepth () * 0.05;
+				var w1 = stream.readDepth () * 0.05;
+				
+				var startCaps = stream.readCapsStyle ();
+				var joints = stream.readJoinStyle ();
+				var hasFill = stream.readBool ();
+				var scale = stream.readScaleMode ();
+				var pixelHint = stream.readBool ();
+				var reserved = stream.readBits (5);
+				var noClose = stream.readBool ();
+				var endCaps = stream.readCapsStyle ();
+				
+				var miter = 1.0;
+				
+				if (joints == JointStyle.MITER) {
+					
+					miter = stream.readDepth () / 256.0;
+					
+				}
+				
+				if (!hasFill) {
+					
+					var c0 = stream.readRGB ();
+					var A0 =  (stream.readByte () / 255.0);
+					var c1 = stream.readRGB ();
+					var A1 =  (stream.readByte () / 255.0);
+					
+					result.push (function (g:Graphics, f:Float) {
+						
+						g.lineStyle (w0 + (w1 - w0) * f, interpolateColor (c0, c1, f), A0 + (A1 - A0) * f, pixelHint, scale, startCaps, joints, miter);
+						
+					});
+					
+				} else {
+					
+					var fill = stream.readByte ();
+					
+					// Gradient
+					if ((fill & 0x10) != 0) {
+						
+						var matrix0 = stream.readMatrix ();
+						
+						stream.alignBits ();
+						
+						var matrix1 = stream.readMatrix ();
+						
+						stream.alignBits ();
+						
+						//var spread = inStream.ReadSpreadMethod();
+						//var interp = inStream.ReadInterpolationMethod();
+						
+						var numColors = stream.readBits (4);
+						
+						var colors0 = [];
+						var colors1 = [];
+						var alphas0 = [];
+						var alphas1 = [];
+						var ratios0 = [];
+						var ratios1 = [];
+						
+						for (i in 0...numColors) {
+							
+							ratios0.push (stream.readByte ());
+							colors0.push (stream.readRGB ());
+							alphas0.push (stream.readByte () / 255.0);
+							ratios1.push (stream.readByte ());
+							colors1.push (stream.readRGB ());
+							alphas1.push (stream.readByte () / 255.0);
+							
+						}
+						
+						//var focus = fill==ftRadialF ?  inStream.ReadByte()/255.0 : 0.0;
+						//var type = fill==ftLinear ? nme.display.GradientType.LINEAR :
+						//nme.display.GradientType.RADIAL;
+						
+						result.push (function (g:Graphics, f:Float) {
+							
+							var cols = [];
+							var alphas = [];
+							var ratios = [];
+							
+							for (i in 0...numColors) {
+								
+								cols.push (interpolateColor (colors0[i], colors1[i], f));
+								alphas.push (alphas0[i] + (alphas1[i] - alphas0[i]) * f);
+								ratios.push (ratios0[i] + (ratios1[i] - ratios0[i]) * f);
+								
+							}
+							
+							g.lineGradientStyle(GradientType.LINEAR, cols, alphas, ratios, interpolateMatrix (matrix0, matrix1, f));
+							
+						});
+						
+					} else {
+						
+						throw ("Unknown fillstyle (" + fill + ")");
+						
+					}
+					
+				}
+				
+			}
+			
+		}
+		
+		return result;
+		
+	}
+	
+	
+	public function render (graphics:Graphics, f:Float):Bool {
+		
+		waitingLoader = false;
+		
+		for (command in commands) {
+			
+			command (graphics, f);
+			
+		}
+		
+		return waitingLoader;
+		
+	}
+	
+	
 }
 
-typedef MorphEdgeList = List<MorphEdge>;
 
+typedef MorphRenderCommand = Graphics -> Float -> Void;
 
-class MorphShape
-{
-   var mBounds0:Rectangle;
-   var mBounds1:Rectangle;
-   var mEdgeBounds0:Rectangle;
-   var mEdgeBounds1:Rectangle;
-   var mHasNonScaled:Bool;
-   var mHasScaled:Bool;
-   var mCommands:MorphRenderFuncList;
-   var mSWF:SWF;
-   var mWaitingLoader:Bool;
-
-   // TODO: make common with shape.hx
-   static var ftSolid  = 0x00;
-   static var ftLinear = 0x10;
-   static var ftRadial = 0x12;
-   static var ftRadialF= 0x13;
-   static var ftBitmapRepeat  = 0x40;
-   static var ftBitmapClipped = 0x41;
-   static var ftBitmapRepeatR = 0x42;
-   static var ftBitmapClippedR= 0x43;
-
-
-   public function new(inSWF:SWF, inStream:SWFStream, inVersion:Int)
-   {
-      mSWF = inSWF;
-
-      inStream.alignBits();
-      mCommands = [];
-      mBounds0 = inStream.readRect();
-      mBounds1 = inStream.readRect();
-      mWaitingLoader = false;
-      // trace(mBounds);
-
-
-      if (inVersion==2)
-      {
-         inStream.alignBits();
-         mEdgeBounds0 = inStream.readRect();
-         mEdgeBounds1 = inStream.readRect();
-         inStream.alignBits();
-         inStream.readBits(6);
-         mHasNonScaled = inStream.readBool();
-         mHasScaled = inStream.readBool();
-      }
-      else
-      {
-         mEdgeBounds0 = mBounds0;
-         mEdgeBounds1 = mBounds1;
-         mHasScaled = mHasNonScaled = true;
-      }
-
-      inStream.alignBits();
-      var offset = inStream.readInt();
-      var end_start = inStream.getBytesLeft() - offset;
-
-      var fill_styles = ReadFillStyles(inStream,inVersion);
-
-      var line_styles = ReadLineStyles(inStream,inVersion);
-
-      inStream.alignBits();
-      var fill_bits = inStream.readBits(4);
-      var line_bits = inStream.readBits(4);
-
-
-      //trace("fill_bits " + fill_bits);
-      //trace("line_bits " + line_bits);
-
-
-      var edges = new MorphEdgeList();
-      var pen_x = 0.0;
-      var pen_y = 0.0;
-
-      while(true)
-      {
-         var edge = inStream.readBool();
-         // trace("Edge :" + edge);
-         if (!edge)
-         {
-            var new_styles = inStream.readBool();
-            var new_line_style = inStream.readBool();
-            var new_fill_style1 = inStream.readBool();
-            var new_fill_style0 = inStream.readBool();
-            var move_to = inStream.readBool();
-
-            // End-of-shape - Done !
-            if (!move_to && !new_styles && !new_line_style && 
-                    !new_fill_style1 && !new_fill_style0 )
-               break;
- 
-            if (true)
-            {
-               // The case where new_styles==true seems to have some
-               //  additional data (bitmap?) for embeded line styles.
-               new_styles = false;
-            }
-
-
-            // Style changed record ...
-            if (move_to)
-            {
-               var bits = inStream.readBits(5);
-               pen_x = inStream.readTwips(bits);
-               pen_y = inStream.readTwips(bits);
-               edges.add( meMove(pen_x,pen_y) );
-               //trace("Start: move " + pen_x + "," + pen_y );
-            }
+enum MorphEdge {
+	
+	meStyle (func:Graphics -> Float -> Void);
+	meMove (x:Float, y:Float);
+	meLine (cx:Float, cy:Float, x:Float, y:Float);
+	meCurve (cx:Float, cy:Float, x:Float, y:Float);
    
-            if (new_fill_style0)
-            {
-               var fill_style = inStream.readBits(fill_bits);
-               if (fill_style>=fill_styles.length)
-                   throw("Invalid fill style");
-               edges.add( meStyle(fill_styles[fill_style]) );
-               //trace("Start: fill style");
-            }
-   
-            if (new_fill_style1)
-            {
-               var fill_style = inStream.readBits(fill_bits);
-               if (fill_style>=fill_styles.length)
-                   throw("Invalid fill style");
-           
-               edges.add( meStyle(fill_styles[fill_style]) );
-               //trace("Start: fill style");
-            }
-   
-            if (new_line_style)
-            {
-               var line_style = inStream.readBits(line_bits);
-               if (line_style>=line_styles.length)
-                   throw("Invalid line style: " + line_style + "/" +
-                       line_styles.length + " (" + line_bits + ")");
-               edges.add(meStyle(line_styles[line_style]));
-               //trace("Start: line style");
-            }
-         }
-         // edge ..
-         else
-         {
-            // straight
-            if (inStream.readBool())
-            {
-               var delta_bits = inStream.readBits(4) + 2;
-               var x0 = pen_x;
-               var y0 = pen_y;
-               if (inStream.readBool())
-               {
-                  pen_x += inStream.readTwips(delta_bits);
-                  pen_y += inStream.readTwips(delta_bits);
-               }
-               else if (inStream.readBool())
-                  pen_y += inStream.readTwips(delta_bits);
-               else
-                  pen_x += inStream.readTwips(delta_bits);
-   
-               edges.add( meLine((pen_x+x0)*0.5, (pen_y+y0)*0.5, pen_x,pen_y) );
-               //trace("Start: lineTo " + pen_x + "," + pen_y);
-            }
-            // Curved ...
-            else
-            {
-               var delta_bits = inStream.readBits(4) + 2;
-               var cx = pen_x + inStream.readTwips(delta_bits);
-               var cy = pen_y + inStream.readTwips(delta_bits);
-               var px = cx + inStream.readTwips(delta_bits);
-               var py = cy + inStream.readTwips(delta_bits);
-               // Can't push "pen_x/y" in closure because it uses a reference
-               //  to the member variable, not a copy of the current value.
-               pen_x = px;
-               pen_y = py;
-               edges.add( meCurve(cx,cy,pen_x,pen_y) );
-               //trace("Start: curveTo " + pen_x + "," + pen_y);
-            }
-         }
-      }
-
-
-
-
-      // Ok, now read the second half of the shape
-      pen_x = 0.0;
-      pen_y = 0.0;
-      inStream.alignBits();
-
-      if ( end_start != inStream.getBytesLeft())
-         throw("end offset mismatch");
-
-      fill_bits = inStream.readBits(4);
-      line_bits = inStream.readBits(4);
-
-      if (fill_bits!=0 || line_bits!=0)
-         throw("unexpected style data in morph");
-
-      while(true)
-      {
-         var edge = inStream.readBool();
-
-         // trace("Edge :" + edge);
-         if (!edge)
-         {
-            var new_styles = inStream.readBool();
-            var new_line_style = inStream.readBool();
-            var new_fill_style1 = inStream.readBool();
-            var new_fill_style0 = inStream.readBool();
-            var move_to = inStream.readBool();
-
-            if (new_line_style || new_fill_style0 || new_fill_style1 || new_styles)
-               throw("Style change in Morph");
-
-            // End-of-shape - Done !
-            if (!move_to)
-            {
-               // trace("end edges done.");
-               break;
-            }
-         }
-
-         // Get start entry ...
-         var x:Float=0;
-         var y:Float=0;
-         var cx:Float=0;
-         var cy:Float=0;
-         var is_move = false;
-         var is_curve = false;
-         var is_line = false;
-
-         var edge_found = false;
-         while( !edge_found )
-         {
-            var orig = edges.pop();
-            if (orig==null)
-               throw "Too few edges in first shape";
-            edge_found = true;
-            switch(orig)
-            {
-               case meMove(me_x,me_y):
-                  x = me_x;
-                  y = me_y;
-                  is_move = true;
-                  // trace("  pop move");
-                  // here we have a "moveTo" in the first list and a "lineTo"
-                  // in the second.  Combine these to a "move", and find the
-                  // next line entry ...
-                  //  ... or maybe just ignore it.
-                  if (edge)
-                  {
-                     var px = pen_x;
-                     var py = pen_y;
-                     //mCommands.push( function(g:Graphics,f:Float)
-                        //{ g.moveTo(x+(px-x)*f, y+(py-y)*f); } );
-                     edge_found = false;
-                  }
-
-               case meLine(me_cx,me_cy,me_x,me_y):
-                  cx = me_cx;
-                  cy = me_cy;
-                  x = me_x;
-                  y = me_y;
-                  is_line = true;
-                  // trace("  pop line:" + x + "," + y);
-               case meCurve(me_cx,me_cy,me_x,me_y):
-                  cx = me_cx;
-                  cy = me_cy;
-                  x = me_x;
-                  y = me_y;
-                  is_curve = true;
-                  // trace("  pop curve");
-               case meStyle(func):
-                  mCommands.push(func);
-                  edge_found = false;
-                  // trace("  pop style");
-            }
-         }
-
-         // trace("Edge :" + edge);
-         if (!edge)
-         {
-            if (!is_move)
-               throw("MorphShape: mismatched move");
-
-
-            var bits = inStream.readBits(5);
-            pen_x = inStream.readTwips(bits);
-            pen_y = inStream.readTwips(bits);
-            var px = pen_x;
-            var py = pen_y;
-            mCommands.push( function(g:Graphics,f:Float)
-               { g.moveTo(x+(px-x)*f, y+(py-y)*f); } );
-         }
-         else
-         {
-            // if (is_move) throw("edge found when move expected");
-
-            // straight
-            if (inStream.readBool())
-            {
-               var delta_bits = inStream.readBits(4) + 2;
-               var x0 = pen_x;
-               var y0 = pen_y;
-               if (inStream.readBool())
-               {
-                  pen_x += inStream.readTwips(delta_bits);
-                  pen_y += inStream.readTwips(delta_bits);
-               }
-               else if (inStream.readBool())
-                  pen_y += inStream.readTwips(delta_bits);
-               else
-                  pen_x += inStream.readTwips(delta_bits);
- 
-               var px = pen_x;
-               var py = pen_y;
-               if (!is_line)
-               {
-                  var cx2 = (px+x0)*0.5;
-                  var cy2 = (py+y0)*0.5;
-                  mCommands.push( function(g:Graphics,f:Float)
-                     { g.curveTo(cx+(cx2-cx)*f, cy+(cy2-cy)*f,
-                              x+(px-x)*f, y+(py-y)*f); } );
-               }
-               else
-                  mCommands.push( function(g:Graphics,f:Float)
-                     { g.lineTo(x+(px-x)*f, y+(py-y)*f); } );
-               // trace("End: lineTo " + pen_x + "," + pen_y);
-            }
-            // Curved ...
-            else
-            {
-               var delta_bits = inStream.readBits(4) + 2;
-               var cx2 = pen_x + inStream.readTwips(delta_bits);
-               var cy2 = pen_y + inStream.readTwips(delta_bits);
-               var px = cx2 + inStream.readTwips(delta_bits);
-               var py = cy2 + inStream.readTwips(delta_bits);
-               // Can't push "pen_x/y" in closure because it uses a reference
-               //  to the member variable, not a copy of the current value.
-               pen_x = px;
-               pen_y = py;
-
-               mCommands.push( function(g:Graphics,f:Float)
-                  { g.curveTo(cx+(cx2-cx)*f, cy+(cy2-cy)*f,
-                              x+(px-x)*f, y+(py-y)*f); } );
-               // trace("End: curveTo " + pen_x + "," + pen_y);
-            }
-
-         }
-      }
-
-      for(e in edges)
-      {
-         switch(e)
-         {
-            case meStyle(func):
-               // trace("  pop final func");
-               mCommands.push(func);
-
-            default:
-               throw("Edge count mismatch");
-         }
-      }
-
-      mSWF = null;
-
-      // Render( new nme.display.DebugGfx());
-   }
-
-   public function Render(inGraphics:Graphics,f:Float)
-   {
-      mWaitingLoader = false;
-      for(c in mCommands)
-         c(inGraphics,f);
-      return mWaitingLoader;
-   }
-
-   static function InterpMatrix(inM0:Matrix,inM1:Matrix,f:Float)
-   {
-      var m = new Matrix();
-      m.a = inM0.a + (inM1.a - inM0.a)*f;
-      m.b = inM0.b + (inM1.b - inM0.b)*f;
-      m.c = inM0.c + (inM1.c - inM0.c)*f;
-      m.d = inM0.d + (inM1.d - inM0.d)*f;
-      m.tx= inM0.tx + (inM1.tx - inM0.tx)*f;
-      m.ty= inM0.ty + (inM1.ty - inM0.ty)*f;
-      return m;
-   }
-
-   static function InterpColour(inC0:Int,inC1:Int,f:Float)
-   {
-      var r0 = (inC0>>16) & 0xff;
-      var g0 = (inC0>>8) & 0xff;
-      var b0 = (inC0) & 0xff;
-      return (Std.int( r0 + (((inC1>>16) & 0xff )-r0)* f )<< 16)|
-             (Std.int( g0 + (((inC1>>8 ) & 0xff )-g0)* f )<< 8)|
-             (Std.int( b0 + (((inC1    ) & 0xff )-b0)* f ));
-   }
-
-   function ReadFillStyles(inStream:SWFStream,inVersion:Int) : MorphRenderFuncList
-   {
-      var result:MorphRenderFuncList = [];
-
-
-      // Special null fill-style
-      result.push( function(g:Graphics,f:Float) { g.endFill(); } );
-
-
-      var n = inStream.readArraySize(true);
-      for(i in 0...n)
-      {
-         var fill = inStream.readByte();
-         if (fill==ftSolid)
-         {
-            var RGB0 = inStream.readRGB();
-            var A0 = inStream.readByte()/255.0;
-            var RGB1 = inStream.readRGB();
-            var A1 = inStream.readByte()/255.0;
-            var dA = A1 - A0;
-            result.push( function(gfx:Graphics,f:Float)
-            {
-              gfx.beginFill(InterpColour(RGB0,RGB1,f), (A0 + dA*f ));
-            } );
-         }
-         // Gradient
-         else if ( (fill & 0x10) !=0 )
-         {
-            var matrix0 = inStream.readMatrix();
-            inStream.alignBits();
-            var matrix1 = inStream.readMatrix();
-            inStream.alignBits();
-
-            //var spread = inStream.ReadSpreadMethod();
-            //var interp = inStream.ReadInterpolationMethod();
-
-            var n = inStream.readBits(4);
-            var colors0 = [];
-            var colors1 = [];
-            var alphas0 = [];
-            var alphas1 = [];
-            var ratios0 = [];
-            var ratios1 = [];
-            for(i in 0...n)
-            {
-               ratios0.push( inStream.readByte() );
-               colors0.push( inStream.readRGB() );
-               alphas0.push( inStream.readByte()/255.0 );
-               ratios1.push( inStream.readByte() );
-               colors1.push( inStream.readRGB() );
-               alphas1.push( inStream.readByte()/255.0 );
-            }
-            //var focus = fill==ftRadialF ?  inStream.ReadByte()/255.0 : 0.0;
-            //var type = fill==ftLinear ? nme.display.GradientType.LINEAR :
-                                         //nme.display.GradientType.RADIAL;
-
-            result.push( function(g:Graphics,f:Float) {
-               var cols = [];
-               var alphas = [];
-               var ratios = [];
-               for(i in 0...n)
-               {
-                  cols.push( InterpColour(colors0[i],colors1[i],f) );
-                  alphas.push( alphas0[i] + (alphas1[i]-alphas0[i]) * f );
-                  ratios.push( ratios0[i] + (ratios1[i]-ratios0[i]) * f );
-               }
-               g.beginGradientFill(GradientType.LINEAR,
-                       cols,alphas,ratios, InterpMatrix(matrix0,matrix1,f) );
-                                   
-              } );
-         }
-         // Bitmap
-         else if ( (fill & 0x40)!=0)
-         {
-            var id = inStream.readID();
-            var bitmap = mSWF.getBitmapDataID(id);
-
-
-            inStream.alignBits();
-            var matrix0 = inStream.readMatrix();
-            // Not too sure about these.
-            // A scale of (20,20) is 1 pixel-per-unit.
-            matrix0.a *= 0.05;
-            matrix0.b *= 0.05;
-            matrix0.c *= 0.05;
-            matrix0.d *= 0.05;
-
-            inStream.alignBits();
-            var matrix1 = inStream.readMatrix();
-            // Not too sure about these.
-            // A scale of (20,20) is 1 pixel-per-unit.
-            matrix1.a *= 0.05;
-            matrix1.b *= 0.05;
-            matrix1.c *= 0.05;
-            matrix1.d *= 0.05;
-
-
-            inStream.alignBits();
-            //var repeat = fill == ftBitmapRepeat || fill==ftBitmapRepeatR;
-            //var smooth = fill == ftBitmapRepeatR || fill ==ftBitmapClippedR;
-
-            if (bitmap!=null)
-            {
-               result.push( function(g:Graphics,f:Float) {
-                  g.beginBitmapFill(bitmap,InterpMatrix(matrix0,matrix1,f) );});
-            }
-            // May take some time for bitmap to load ...
-            else
-            {
-               var s = mSWF;
-               var me = this;
-               result.push( function(g:Graphics,f:Float) {
-                  if (bitmap==null)
-                  {
-                     bitmap = s.getBitmapDataID(id);
-                     if (bitmap==null)
-                     {
-                        me.mWaitingLoader = true;
-                        g.endFill();
-                        return;
-                     }
-                     else
-                        me = null;
-                  }
-
-               g.beginBitmapFill(bitmap,InterpMatrix(matrix0,matrix1,f)); } );
-            }
-
-         }
-      }
-      return result;
-   }
-
-   function ReadLineStyles(inStream:SWFStream,inVersion:Int) : MorphRenderFuncList
-   {
-      var result:MorphRenderFuncList = [];
-
-      // Special null line-style
-      result.push( function(g:Graphics,f:Float) { g.lineStyle(null); } );
-
-      var n = inStream.readArraySize(true);
-       
-      for(i in 0...n)
-      {
-         if (inVersion==1)
-         {
-            inStream.alignBits();
-            var w0 = inStream.readDepth()*0.05;
-            var w1 = inStream.readDepth()*0.05;
-            var RGB0 = inStream.readRGB();
-            var A0 = inStream.readByte()/255.0;
-            var RGB1 = inStream.readRGB();
-            var A1 = inStream.readByte()/255.0;
-            result.push( function(g:Graphics,f:Float)
-               { g.lineStyle(w0+(w1-w0)*f,InterpColour(RGB0,RGB1,f),
-                              A0 + (A1-A0)*f ); } );
-         }
-         // MorphLinestyle 2
-         else
-         {
-            inStream.alignBits();
-            var w0 = inStream.readDepth()*0.05;
-            var w1 = inStream.readDepth()*0.05;
-            //trace(" w0..w1 : " + w0 + "," + w1 );
-            var start_caps = inStream.readCapsStyle();
-            var joints = inStream.readJoinStyle();
-            var has_fill = inStream.readBool();
-            var scale = inStream.readScaleMode();
-            var pixel_hint = inStream.readBool();
-            var reserved = inStream.readBits(5);
-            var no_close = inStream.readBool();
-            var end_caps = inStream.readCapsStyle();
-            var miter = joints==JointStyle.MITER ? inStream.readDepth()/256.0:1;
-            if (!has_fill)
-            {
-               var c0 = inStream.readRGB();
-               var A0 =  (inStream.readByte()/255.0);
-               var c1 = inStream.readRGB();
-               var A1 =  (inStream.readByte()/255.0);
-
-               result.push( function(g:Graphics,f:Float)
-                 { g.lineStyle( w0 + (w1-w0)*f, InterpColour(c0,c1,f),
-                    A0+(A1-A0)*f,pixel_hint,scale,start_caps,joints,miter);} );
-            }
-            else
-            {
-               var fill = inStream.readByte();
-
-               // Gradient
-               if ( (fill & 0x10) !=0 )
-               {
-                  var matrix0 = inStream.readMatrix();
-                  inStream.alignBits();
-                  var matrix1 = inStream.readMatrix();
-                  inStream.alignBits();
-      
-                  //var spread = inStream.ReadSpreadMethod();
-                  //var interp = inStream.ReadInterpolationMethod();
-      
-                  var n = inStream.readBits(4);
-                  var colors0 = [];
-                  var colors1 = [];
-                  var alphas0 = [];
-                  var alphas1 = [];
-                  var ratios0 = [];
-                  var ratios1 = [];
-                  for(i in 0...n)
-                  {
-                     ratios0.push( inStream.readByte() );
-                     colors0.push( inStream.readRGB() );
-                     alphas0.push( inStream.readByte()/255.0 );
-                     ratios1.push( inStream.readByte() );
-                     colors1.push( inStream.readRGB() );
-                     alphas1.push( inStream.readByte()/255.0 );
-                  }
-                  //var focus = fill==ftRadialF ?  inStream.ReadByte()/255.0 : 0.0;
-                  //var type = fill==ftLinear ? nme.display.GradientType.LINEAR :
-                                               //nme.display.GradientType.RADIAL;
-      
-                  result.push( function(g:Graphics,f:Float) {
-                     var cols = [];
-                     var alphas = [];
-                     var ratios = [];
-                     for(i in 0...n)
-                     {
-                        cols.push( InterpColour(colors0[i],colors1[i],f) );
-                        alphas.push( alphas0[i] + (alphas1[i]-alphas0[i]) * f );
-                        ratios.push( ratios0[i] + (ratios1[i]-ratios0[i]) * f );
-                     }
-                     g.lineGradientStyle(GradientType.LINEAR,
-                             cols,alphas,ratios, InterpMatrix(matrix0,matrix1,f) );
-                                         
-                    } );
-
-               }
-               else
-                  throw("Unknown fillstyle (" + fill + ")");
-            }
-         }
-      }
-
-      return result;
-   }
-
 }

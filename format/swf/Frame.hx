@@ -1,82 +1,115 @@
 package format.swf;
 
+
 import format.swf.Character;
 import format.swf.DepthSlot;
 import format.swf.DisplayAttributes;
-import nme.geom.Matrix;
-import nme.geom.ColorTransform;
+import flash.geom.Matrix;
+import flash.geom.ColorTransform;
 
 
-typedef DepthObjects = IntHash<DepthSlot>;
-
-
-class Frame
-{
-   var mObjects : DepthObjects;
-   var mFrame : Int;
-
-   public function new(?inPrev:Frame)
-   {
-      mObjects = new DepthObjects();
-      if (inPrev!=null)
-      {
-         var objs = inPrev.mObjects;
-         for(depth in objs.keys())
-            mObjects.set( depth, objs.get(depth) );
-         mFrame = inPrev.mFrame + 1;
-      }
-      else
-         mFrame = 1;
-   }
-
-   public function CopyObjectSet()
-   {
-      var c = new DepthObjects();
-      for(d in mObjects.keys())
-         c.set(d,mObjects.get(d));
-      return c;
-   }
-
-   public function Remove(inDepth:Int)
-   {
-      mObjects.remove(inDepth);
-   }
-
-   public function Place(inCharID:Int, inChar:Character, inDepth:Int,
-                  inMatrix:Matrix, inColTx:ColorTransform,
-                  inRatio:Null<Int>,inName:Null<String>)
-   {
-      var old = mObjects.get(inDepth);
-      if (old!=null)
-         throw("Overwriting non-empty depth");
-      var attrib = new DisplayAttributes( );
-      attrib.frame = mFrame;
-      attrib.matrix = inMatrix;
-      attrib.colorTransform = inColTx;
-      attrib.ratio = inRatio;
-	  if (inName == null) {
-	      attrib.name = "";
-	  } else {
-		  attrib.name = inName;
-	  }
-      attrib.characterID = inCharID;
-      var obj = new DepthSlot(inChar,inCharID,attrib);
-      mObjects.set(inDepth,obj);
-   }
-
-   public function Move(inDepth:Int,
-                  inMatrix:Matrix, inColTx:ColorTransform,
-                  inRatio:Null<Int>)
-   {
-      var obj = mObjects.get(inDepth);
-      if (obj==null)
-         throw("depth has no object");
-
-      obj.move(mFrame, inMatrix, inColTx, inRatio);
-   }
-
-   public function GetFrame() { return mFrame; }
-
+class Frame {
+	
+	
+	public var frame:Int;
+	
+	private var objects:IntHash <DepthSlot>;
+	
+	
+	public function new (previous:Frame = null) {
+		
+		objects = new IntHash <DepthSlot> ();
+		
+		if (previous != null) {
+			
+			var previousObjects = previous.objects;
+			
+			for (depth in previousObjects.keys ()) {
+				
+				objects.set (depth, previousObjects.get (depth));
+				
+			}
+			
+			frame = previous.frame + 1;
+			
+		} else {
+			
+			frame = 1;
+			
+		}
+		
+	}
+	
+	
+	public function copyObjectSet ():IntHash <DepthSlot> {
+		
+		var copy = new IntHash <DepthSlot> ();
+		
+		for (depth in objects.keys ()) {
+			
+			copy.set (depth, objects.get (depth));
+			
+		}
+		
+		return copy;
+		
+	}
+	
+	
+	public function move (depth:Int, matrix:Matrix, colorTransform:ColorTransform, ratio:Null<Int>):Void {
+		
+		var object = objects.get (depth);
+		
+		if (object == null) {
+			
+			throw ("Depth has no object");
+			
+		}
+		
+		object.move (frame, matrix, colorTransform, ratio);
+		
+	}
+	
+	
+	public function place (characterID:Int, character:Character, depth:Int, matrix:Matrix, colorTransform:ColorTransform, ratio:Null<Int>, name:Null<String>):Void {
+		
+		var previousObject = objects.get (depth);
+		
+		if (previousObject != null) {
+			
+			throw("Overwriting non-empty depth");
+			
+		}
+		
+		var attributes = new DisplayAttributes ();
+		attributes.frame = frame;
+		attributes.matrix = matrix;
+		attributes.colorTransform = colorTransform;
+		attributes.ratio = ratio;
+		
+		if (name == null) {
+			
+			attributes.name = "";
+			
+		} else {
+			
+			attributes.name = name;
+			
+		}
+		
+		attributes.characterID = characterID;
+		
+		var object = new DepthSlot (character, characterID, attributes);
+		objects.set (depth, object);
+		
+	}
+	
+	
+	public function remove (depth:Int):Void {
+		
+		objects.remove (depth);
+		
+	}
+	
+	
 }
-
-typedef Frames = Array<Frame>;

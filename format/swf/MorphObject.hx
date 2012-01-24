@@ -1,26 +1,34 @@
 package format.swf;
 
-class MorphObject extends flash.display.Sprite
-{
-   var mData:MorphShape;
 
-   public function new(inData:MorphShape)
-   {
-      super();
-      mData = inData;
-   }
+import flash.display.Sprite;
 
 
-   public function SetRatio(inRatio:Int)
-   {
-      // TODO: this could be cached in child objects.
-      var gfx = graphics;
-      gfx.clear();
-      var f = inRatio/65536.0;
-      return mData.Render(gfx,f);
-   }
-
-
-
-
+class MorphObject extends Sprite {
+	
+	
+	private var data:MorphShape;
+	
+	
+	public function new (data:MorphShape)	{
+		
+		super ();
+		
+		this.data = data;
+		
+	}
+	
+	
+	public function setRatio (ratio:Int):Bool {
+		
+		// TODO: this could be cached in child objects.
+		
+		graphics.clear ();
+		var f = ratio / 65536.0;
+		
+		return data.render (graphics, f);
+		
+	}
+	
+	
 }

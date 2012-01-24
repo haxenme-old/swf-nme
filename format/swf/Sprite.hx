@@ -17,7 +17,7 @@ typedef FrameLabels = Hash<Int>;
 class Sprite
 {
    public var mSWF(default,null) : SWF;
-   public var mFrames(default,null):Frames;
+   public var mFrames(default,null):Array <Frame>;
    var mFrameCount : Int;
    var mFrame:Frame;
    var mFrameLabels:FrameLabels;
@@ -44,7 +44,7 @@ class Sprite
 
    public function LabelFrame(inName:String)
    {
-      mFrameLabels.set(inName,mFrame.GetFrame());
+      mFrameLabels.set(inName,mFrame.frame);
    }
 
    public function ShowFrame()
@@ -58,7 +58,7 @@ class Sprite
       if (inVersion==1)
         inStream.readID();
       var depth = inStream.readDepth();
-      mFrame.Remove(depth);
+      mFrame.remove(depth);
    }
 
    public function PlaceObject(inStream:SWFStream,inVersion : Int)
@@ -71,7 +71,7 @@ class Sprite
          var matrix = inStream.readMatrix();
          var col_tx:ColorTransform = inStream.getBytesLeft()>0 ?
                  inStream.readColorTransform(false) : null;
-         mFrame.Place(id,chr,depth,matrix,col_tx,null,null);
+         mFrame.place(id,chr,depth,matrix,col_tx,null,null);
       }
       else if (inVersion==2 || inVersion==3)
       {
@@ -180,17 +180,17 @@ class Sprite
          {
             if (has_character)
             {
-               mFrame.Remove(depth);
-               mFrame.Place(cid,mSWF.getCharacter(cid),depth,matrix,col_tx,ratio,mName);
+               mFrame.remove(depth);
+               mFrame.place(cid,mSWF.getCharacter(cid),depth,matrix,col_tx,ratio,mName);
             }
             else
             {
-               mFrame.Move(depth,matrix,col_tx,ratio);
+               mFrame.move(depth,matrix,col_tx,ratio);
             }
          }
          else
          {
-            mFrame.Place(cid,mSWF.getCharacter(cid),depth,matrix,col_tx,ratio,mName);
+            mFrame.place(cid,mSWF.getCharacter(cid),depth,matrix,col_tx,ratio,mName);
          }
       }
       else

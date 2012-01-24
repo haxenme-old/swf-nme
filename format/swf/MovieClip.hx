@@ -43,7 +43,7 @@ typedef ObjectPool = IntHash<ObjectList>;
 class MovieClip extends MovieClipBase
 {
    var mSWF    : SWF;
-   var mFrames : format.swf.Frames;
+   var mFrames : Array <Frame>;
    var mActive : ActiveObjects;
    var mPlaying: Bool;
    var mObjectPool:ObjectPool;
@@ -136,7 +136,7 @@ class MovieClip extends MovieClipBase
 
          if (frame!=null)
          {
-            var frame_objs = frame.CopyObjectSet();
+            var frame_objs = frame.copyObjectSet();
 
             // Remove or update child frames in the existing list ...
             var new_active = new ActiveObjects();
