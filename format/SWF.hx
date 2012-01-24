@@ -303,31 +303,31 @@ class SWF {
 				
 				case Tags.FrameLabel:
 					
-					sprite.LabelFrame (stream.readString ());
+					sprite.labelFrame (stream.readString ());
 				
 				case Tags.ShowFrame:
 					
-					sprite.ShowFrame ();
+					sprite.showFrame ();
 				
 				case Tags.PlaceObject:
 					
-					sprite.PlaceObject (stream, 1);
+					sprite.placeObject (stream, 1);
 				
 				case Tags.PlaceObject2:
 					
-					sprite.PlaceObject (stream, 2);
+					sprite.placeObject (stream, 2);
 				
 				case Tags.PlaceObject3:
 					
-					sprite.PlaceObject(stream, 3);
+					sprite.placeObject(stream, 3);
 				
 				case Tags.RemoveObject:
 					
-					sprite.RemoveObject (stream, 1);
+					sprite.removeObject (stream, 1);
 				
 				case Tags.RemoveObject2:
 					
-					sprite.RemoveObject (stream, 2);
+					sprite.removeObject (stream, 2);
 				
 				case Tags.DoAction:
 					

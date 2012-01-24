@@ -3,6 +3,7 @@ package format.swf;
 
 class Tags {
 	
+	
 	public static var End:Int = 00;
 	public static var ShowFrame:Int = 01;
 	public static var DefineShape:Int = 02;

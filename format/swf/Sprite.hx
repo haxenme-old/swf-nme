@@ -1,268 +1,340 @@
 package format.swf;
 
-import nme.geom.Matrix;
-import nme.geom.ColorTransform;
 
+import flash.display.BlendMode;
+import flash.filters.BitmapFilter;
+import flash.geom.ColorTransform;
+import flash.geom.Matrix;
 import format.swf.SWFStream;
 import format.swf.Tags;
 import format.swf.Character;
 import format.swf.Frame;
 import format.SWF;
-import nme.display.BlendMode;
-import nme.filters.BitmapFilter;
-
-typedef FrameLabels = Hash<Int>;
 
 
-class Sprite
-{
-   public var mSWF(default,null) : SWF;
-   public var mFrames(default,null):Array <Frame>;
-   var mFrameCount : Int;
-   var mFrame:Frame;
-   var mFrameLabels:FrameLabels;
-   var mName:String;
-   var mClassName:String;
-   var mBlendMode:BlendMode;
-   var mCacheAsBitmap:Bool;
-   var mFilters:Array<BitmapFilter>;
-
-   public function new(inSWF:SWF,inID:Int,inFrameCount:Int)
-   {
-      mSWF = inSWF;
-      mFrameCount = inFrameCount;
-      mFrames = [ null ]; // frame 0 is empty
-
-      mFilters = null;
-      mFrame = new Frame();
-      mFrameLabels = new FrameLabels();
-      mName = "Sprite " + inID;
-      mCacheAsBitmap = false;
-   }
-
-   public function GetFrameCount() { return mFrameCount; }
-
-   public function LabelFrame(inName:String)
-   {
-      mFrameLabels.set(inName,mFrame.frame);
-   }
-
-   public function ShowFrame()
-   {
-      mFrames.push(mFrame);
-      mFrame = new Frame(mFrame);
-   }
-
-   public function RemoveObject(inStream:SWFStream,inVersion:Int)
-   {
-      if (inVersion==1)
-        inStream.readID();
-      var depth = inStream.readDepth();
-      mFrame.remove(depth);
-   }
-
-   public function PlaceObject(inStream:SWFStream,inVersion : Int)
-   {
-      if (inVersion==1)
-      {
-         var id = inStream.readID();
-         var chr = mSWF.getCharacter(id);
-         var depth = inStream.readDepth();
-         var matrix = inStream.readMatrix();
-         var col_tx:ColorTransform = inStream.getBytesLeft()>0 ?
-                 inStream.readColorTransform(false) : null;
-         mFrame.place(id,chr,depth,matrix,col_tx,null,null);
-      }
-      else if (inVersion==2 || inVersion==3)
-      {
-         inStream.alignBits();
-         var has_clip_action = inStream.readBool();
-         var has_clip_depth = inStream.readBool();
-         var has_name = inStream.readBool();
-         var has_ratio = inStream.readBool();
-         var has_color_tx = inStream.readBool();
-         var has_matrix = inStream.readBool();
-         var has_character = inStream.readBool();
-         var move = inStream.readBool();
-
-         var has_image = false;
-         var has_class_name = false;
-         var has_cache_as_bmp = false;
-         var has_blend_mode = false;
-         var has_filter_list = false;
-         if (inVersion==3)
-         {
-            inStream.readBool();
-            inStream.readBool();
-            inStream.readBool();
-            has_image = inStream.readBool();
-            has_class_name = inStream.readBool();
-            has_cache_as_bmp = inStream.readBool();
-            has_blend_mode = inStream.readBool();
-            has_filter_list = inStream.readBool();
-         }
-
-         var depth = inStream.readDepth();
-
-         if (has_class_name)
-            mClassName = inStream.readString();
-         var cid = has_character ? inStream.readID() : 0;
-
-         var matrix = has_matrix ? inStream.readMatrix() : null;
-
-         var col_tx = has_color_tx ? inStream.readColorTransform(inVersion>2) : null;
-
-         var ratio:Null<Int> = has_ratio ? inStream.readUInt16() : null;
-
-         if (has_name || (has_image && has_character) )
-           mName = inStream.readString();
-
-
-         var clip_depth = has_clip_depth ? inStream.readDepth() : 0;
-         if (has_filter_list)
-         {
-            mFilters = [];
-            var n = inStream.readByte();
-            for(i in 0...n)
-            {
-               var fid = inStream.readByte();
-               mFilters.push(
-                  switch(fid)
-                  {
-                     case 0 : CreateDropShadowFilter(inStream);
-                     case 1 : CreateBlurFilter(inStream);
-                     case 2 : CreateGlowFilter(inStream);
-                     case 3 : CreateBevelFilter(inStream);
-                     case 4 : CreateGradientGlowFilter(inStream);
-                     case 5 : CreateConvolutionFilter(inStream);
-                     case 6 : CreateColorMatrixFilter(inStream);
-                     case 7 : CreateGradientBevelFilter(inStream);
-                     default: throw "Unknown filter : " + fid + "  " + i + "/" +n; 
-                  }
-               );
-            }
-         }
-         if (has_blend_mode)
-         {
-            mBlendMode = switch( inStream.readByte() )
-            {
-               case 2 : BlendMode.LAYER;
-               case 3 : BlendMode.MULTIPLY;
-               case 4 : BlendMode.SCREEN;
-               case 5 : BlendMode.LIGHTEN;
-               case 6 : BlendMode.DARKEN;
-               case 7 : BlendMode.DIFFERENCE;
-               case 8 : BlendMode.ADD;
-               case 9 : BlendMode.SUBTRACT;
-               case 10 : BlendMode.INVERT;
-               case 11 : BlendMode.ALPHA;
-               case 12 : BlendMode.ERASE;
-               case 13 : BlendMode.OVERLAY;
-               case 14 : BlendMode.HARDLIGHT;
-               default:
-                   BlendMode.NORMAL;
-            }
-         }
-         if (has_blend_mode)
-         {
-            mCacheAsBitmap = inStream.readByte()>0;
-         }
-
-
-         if (has_clip_action)
-         {
-            var reserved = inStream.readID();
-            var action_flags = inStream.readID();
-            throw("clip action not implemented");
-         }
-
-         if (move)
-         {
-            if (has_character)
-            {
-               mFrame.remove(depth);
-               mFrame.place(cid,mSWF.getCharacter(cid),depth,matrix,col_tx,ratio,mName);
-            }
-            else
-            {
-               mFrame.move(depth,matrix,col_tx,ratio);
-            }
-         }
-         else
-         {
-            mFrame.place(cid,mSWF.getCharacter(cid),depth,matrix,col_tx,ratio,mName);
-         }
-      }
-      else
-      {
-         throw("place object not implemented:" + inVersion);
-      }
-   }
-
-   function CreateDropShadowFilter(inStream:SWFStream) : BitmapFilter
-   {
-      trace("CreateDropShadowFilter");
-      return null;
-   }
-
-   function CreateBlurFilter(inStream:SWFStream) : BitmapFilter
-   {
-      //trace("CreateBlurFilter");
-      var blurx = inStream.readFixed();
-      var blury = inStream.readFixed();
-      var passes = inStream.readByte();
-      //trace(blurx + "x" + blury + "  x " + passes);
-      return null;
-   }
-
-   function CreateGlowFilter(inStream:SWFStream) : BitmapFilter
-   {
-      trace("CreateGlowFilter");
-      return null;
-   }
-
-   function CreateBevelFilter(inStream:SWFStream) : BitmapFilter
-   {
-      trace("CreateBevelFilter");
-      return null;
-   }
-
-   function CreateGradientGlowFilter(inStream:SWFStream) : BitmapFilter
-   {
-      trace("CreateGradientGlowFilter");
-      return null;
-   }
-
-   function CreateConvolutionFilter(inStream:SWFStream) : BitmapFilter
-   {
-      trace("CreateConvolutionFilter");
-      var w = inStream.readByte();
-      var h = inStream.readByte();
-      var div = inStream.readFloat();
-      var bias = inStream.readFloat();
-      var mtx = new Array<Float>();
-      for(i in 0...w*h)
-         mtx[i] = inStream.readFloat();
-      var flags = inStream.readByte();
-      return null;
-   }
-
-   function CreateColorMatrixFilter(inStream:SWFStream) : BitmapFilter
-   {
-      trace("CreateColorMatrixFilter");
-      var mtx = new Array<Float>();
-      for(i in 0...20)
-         mtx.push( inStream.readFloat() );
-
-      return null;
-   }
-
-   function CreateGradientBevelFilter(inStream:SWFStream) : BitmapFilter
-   {
-      trace("CreateGradientBevelFilter");
-      return null;
-   }
-
-
-
+class Sprite {
+	
+	
+	public var frameCount (default, null):Int;
+	public var frames (default, null):Array <Frame>;
+	public var swf (default, null):SWF;
+	
+	private var blendMode:BlendMode;
+	private var cacheAsBitmap:Bool;
+	private var className:String;
+	private var filters:Array <BitmapFilter>;
+	private var frame:Frame;
+	
+	private var frameLabels:Hash<Int>;
+	private var name:String;
+	
+	
+	public function new (swf:SWF, id:Int, frameCount:Int) {
+		
+		this.swf = swf;
+		this.frameCount = frameCount;
+		frames = [ null ]; // frame 0 is empty
+		
+		filters = null;
+		frame = new Frame ();
+		frameLabels = new Hash <Int> ();
+		name = "Sprite " + id;
+		cacheAsBitmap = false;
+		
+	}
+	
+	
+	private function createBevelFilter (stream:SWFStream):BitmapFilter {
+		
+		trace ("CreateBevelFilter");
+		
+		return null;
+		
+	}
+	
+	
+	private function createBlurFilter (stream:SWFStream):BitmapFilter {
+		
+		var blurX = stream.readFixed ();
+		var blurY = stream.readFixed ();
+		var passes = stream.readByte ();
+		
+		trace ("CreateBlurFilter");
+		
+		return null;
+		
+	}
+	
+	
+	private function createColorMatrixFilter (stream:SWFStream):BitmapFilter {
+		
+		trace ("CreateColorMatrixFilter");
+		
+		var matrix = new Array <Float> ();
+		
+		for (i in 0...20) {
+			
+			matrix.push (stream.readFloat ());
+			
+		}
+		
+		return null;
+		
+	}
+	
+	
+	private function createConvolutionFilter (stream:SWFStream):BitmapFilter {
+		
+		trace ("CreateConvolutionFilter");
+		
+		var width = stream.readByte ();
+		var height = stream.readByte ();
+		var div = stream.readFloat ();
+		var bias = stream.readFloat ();
+		var matrix = new Array <Float> ();
+		
+		for (i in 0...width*height) {
+			
+			matrix[i] = stream.readFloat ();
+			
+		}
+		
+		var flags = stream.readByte ();
+		
+		return null;
+		
+	}
+	
+	
+	private function createDropShadowFilter (stream:SWFStream):BitmapFilter {
+		
+		trace ("CreateDropShadowFilter");
+		
+		return null;
+		
+	}
+	
+	
+	private function createGlowFilter (stream:SWFStream):BitmapFilter {
+		
+		trace ("CreateGlowFilter");
+		
+		return null;
+		
+	}
+	
+	
+	private function createGradientBevelFilter (stream:SWFStream):BitmapFilter {
+		
+		trace ("CreateGradientBevelFilter");
+		
+		return null;
+		
+	}
+	
+	
+	private function createGradientGlowFilter (stream:SWFStream):BitmapFilter {
+		
+		trace ("CreateGradientGlowFilter");
+		
+		return null;
+		
+	}
+	
+	
+	public function labelFrame (name:String):Void {
+		
+		frameLabels.set (name, frame.frame);
+		
+	}
+	
+	
+	public function placeObject (stream:SWFStream, version:Int) {
+		
+		if (version == 1) {
+			
+			var id = stream.readID ();
+			var character = swf.getCharacter (id);
+			var depth = stream.readDepth ();
+			var matrix = stream.readMatrix ();
+			
+			var colorTransform:ColorTransform = null;
+			
+			if (stream.getBytesLeft () > 0) {
+				
+				colorTransform = stream.readColorTransform (false);
+				
+			}
+			
+			frame.place (id, character, depth, matrix, colorTransform, null, null);
+			
+		} else if (version == 2 || version == 3) {
+			
+			stream.alignBits ();
+			
+			var hasClipAction = stream.readBool ();
+			var hasClipDepth = stream.readBool ();
+			var hasName = stream.readBool ();
+			var hasRatio = stream.readBool ();
+			var hasColorTransform = stream.readBool ();
+			var hasMatrix = stream.readBool ();
+			var hasCharacter = stream.readBool ();
+			var move = stream.readBool ();
+			
+			var hasImage = false;
+			var hasClassName = false;
+			var hasCacheAsBitmap = false;
+			var hasBlendMode = false;
+			var hasFilterList = false;
+			
+			if (version == 3) {
+				
+				stream.readBool ();
+				stream.readBool ();
+				stream.readBool ();
+				
+				hasImage = stream.readBool ();
+				hasClassName = stream.readBool ();
+				hasCacheAsBitmap = stream.readBool ();
+				hasBlendMode = stream.readBool ();
+				hasFilterList = stream.readBool ();
+				
+			}
+			
+			var depth = stream.readDepth ();
+			
+			if (hasClassName) {
+				
+				className = stream.readString ();
+				
+			}
+			
+			var cid = hasCharacter ? stream.readID () : 0;
+			var matrix = hasMatrix ? stream.readMatrix () : null;
+			var colorTransform = hasColorTransform ? stream.readColorTransform (version > 2) : null;
+			var ratio:Null<Int> = hasRatio ? stream.readUInt16 () : null;
+			
+			if (hasName || (hasImage && hasCharacter)) {
+				
+				name = stream.readString ();
+				
+			}
+			
+			var clipDepth = hasClipDepth ? stream.readDepth () : 0;
+			
+			if (hasFilterList) {
+				
+				filters = [];
+				
+				var count = stream.readByte();
+				
+				for (i in 0...count) {
+					
+					var filterID = stream.readByte ();
+					
+					filters.push (
+						switch (filterID)
+						{
+							case 0 : createDropShadowFilter (stream);
+							case 1 : createBlurFilter (stream);
+							case 2 : createGlowFilter (stream);
+							case 3 : createBevelFilter (stream);
+							case 4 : createGradientGlowFilter (stream);
+							case 5 : createConvolutionFilter (stream);
+							case 6 : createColorMatrixFilter (stream);
+							case 7 : createGradientBevelFilter (stream);
+							default: throw "Unknown filter : " + filterID + "  " + i + "/" + count; 
+						}
+					);
+					
+				}
+				
+			}
+			
+			if (hasBlendMode) {
+				
+				blendMode = switch (stream.readByte ()) {
+					case 2 : BlendMode.LAYER;
+					case 3 : BlendMode.MULTIPLY;
+					case 4 : BlendMode.SCREEN;
+					case 5 : BlendMode.LIGHTEN;
+					case 6 : BlendMode.DARKEN;
+					case 7 : BlendMode.DIFFERENCE;
+					case 8 : BlendMode.ADD;
+					case 9 : BlendMode.SUBTRACT;
+					case 10 : BlendMode.INVERT;
+					case 11 : BlendMode.ALPHA;
+					case 12 : BlendMode.ERASE;
+					case 13 : BlendMode.OVERLAY;
+					case 14 : BlendMode.HARDLIGHT;
+					default: BlendMode.NORMAL;
+				}
+				
+			}
+			
+			if (hasBlendMode) {
+				
+				cacheAsBitmap = stream.readByte () > 0;
+				
+			}
+			
+			if (hasClipAction) {
+				
+				var reserved = stream.readID ();
+				var actionFlags = stream.readID ();
+				
+				throw("clip action not implemented");
+				
+			}
+			
+			if (move) {
+				
+				if (hasCharacter) {
+					
+					frame.remove (depth);
+					frame.place (cid, swf.getCharacter (cid), depth, matrix, colorTransform, ratio, name);
+					
+				} else {
+					
+					frame.move (depth, matrix, colorTransform, ratio);
+					
+				}
+				
+			} else {
+				
+				frame.place (cid, swf.getCharacter (cid), depth, matrix, colorTransform, ratio, name);
+				
+			}
+			
+		} else {
+			
+			throw ("Place object not implemented: " + version);
+			
+		}
+		
+	}
+	
+	
+	public function removeObject (stream:SWFStream, version:Int):Void {
+		
+		if (version == 1) {
+			
+			stream.readID ();
+			
+		}
+		
+		var depth = stream.readDepth ();
+		frame.remove (depth);
+		
+	}
+	
+	
+	public function showFrame ():Void {
+		
+		frames.push (frame);
+		frame = new Frame (frame);
+		
+	}
+	
+	
 }

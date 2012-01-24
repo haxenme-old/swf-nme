@@ -51,11 +51,11 @@ class MovieClip extends MovieClipBase {
 		
 		if (data != null) {
 			
-			mTotalFrames = data.GetFrameCount();
+			mTotalFrames = data.frameCount;
 			mCurrentFrame = mTotalFrames;
 			
-			swf = data.mSWF;
-			frames = data.mFrames;
+			swf = data.swf;
+			frames = data.frames;
 			activeObjects = new Array <ActiveObject> ();
 			
 			gotoAndPlay (1);
@@ -204,7 +204,7 @@ class MovieClip extends MovieClipBase {
 								var s = new Shape ();
 								s.cacheAsBitmap = true; // temp fix
 								//shape.Render(new nme.display.DebugGfx());
-								waitingLoader = shape.Render (s.graphics);
+								waitingLoader = shape.render (s.graphics);
 								displayObject = s;
 							
 							case charMorphShape (morphData):
@@ -217,7 +217,7 @@ class MovieClip extends MovieClipBase {
 								
 								var s = new Shape();
 								s.cacheAsBitmap = true; // temp fix
-								text.Render (s.graphics);
+								text.render (s.graphics);
 								displayObject = s;
 							
 							case charEditText (text):

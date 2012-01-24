@@ -442,7 +442,7 @@ class MorphShape {
 			
 		}
 		
-		swf = null;
+		this.swf = null;
 		
 		// Render( new nme.display.DebugGfx());
 		
