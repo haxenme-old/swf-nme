@@ -304,13 +304,13 @@ class SWFStream {
 		
 		if (hasOffset) {
 			
-			result.redOffset = readBits (length, true) / 256.0;
-			result.greenOffset = readBits (length, true) / 256.0;
-			result.blueOffset = readBits (length, true) / 256.0;
+			result.redOffset = readBits (length, true);
+			result.greenOffset = readBits (length, true);
+			result.blueOffset = readBits (length, true);
 			
 			if (withAlpha) {
 				
-				result.alphaOffset = readBits (length, true) / 256.0;
+				result.alphaOffset = readBits (length, true);
 				
 			}
 			
