@@ -32,12 +32,16 @@ class Bitmap {
 			/*
 				Formats:
 				
-				1 = RGBA index
-				2 = 32-bit RGB
-				3 = RGB index
+				3 = RGB index (RGBA if version 2)
 				4 = 15-bit RGB
-				5 = 24-bit RGB
+				5 = 24-bit RGB (32-bit RGBA if version 2)
 			*/
+			
+			if (version == 2 && format == 4) {
+				
+				throw ("No 15-bit format in DefineBitsLossless2");
+				
+			}
 			
 			var width = stream.readUInt16 ();
 			var height = stream.readUInt16 ();
@@ -52,33 +56,54 @@ class Bitmap {
 			var buffer:ByteArray = stream.readFlashBytes (stream.getBytesLeft ());
 			buffer.uncompress ();
 			
+			var transparent = false;
+			
 			if (version == 2) {
 				
-				if (format == 4) {
+				transparent = true;
+				
+			}
+			
+			if (format == 3) {
+				
+				var colorTable = new Array <Int> ();
+				
+				for (i in 0...tableSize) {
 					
-					throw ("No 15-bit format in DefineBitsLossless2");
+					var r = buffer.readByte ();
+					var g = buffer.readByte ();
+					var b = buffer.readByte ();
 					
-				} else {
-					
-					if (format == 3) {
+					if (transparent) {
 						
-						format = 1;
+						var a = buffer.readByte ();
+						colorTable.push ((a << 24) + (r << 16) + (g << 8) + b);
 						
 					} else {
 						
-						format = 2;
+						colorTable.push ((r << 16) + (g << 8) + b);
 						
 					}
 					
 				}
 				
-			}
-			
-			var transparent = false;
-			
-			if (format < 3) {
+				var imageData = new ByteArray ();
+				var padding = Math.ceil (width / 4) - Math.floor (width / 4);
 				
-				transparent = true;
+				for (y in 0...height) {
+					
+					for (x in 0...width) {
+						
+						imageData.writeUnsignedInt (colorTable[buffer.readByte ()]);
+						
+					}
+					
+					buffer.position += padding;
+					
+				}
+				
+				buffer = imageData;
+				buffer.position = 0;
 				
 			}
 			
