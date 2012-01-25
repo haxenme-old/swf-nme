@@ -3,5 +3,5 @@
     <tag v="cpp"/>
     <tag v="flash"/>
     <description>Provides support for parsing and rendering SWF content</description>
-    <version name="1.04">Fixed regression in shape rendering</version>
+    <version name="1.05">Small MovieClip fix, color tint fix</version>
 </project>
