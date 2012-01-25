@@ -93,6 +93,7 @@ class MovieClip extends MovieClipBase {
 		if (mTotalFrames > 1) {
 			
 			playing = true;
+			removeEventListener (Event.ENTER_FRAME, this_onEnterFrame);
 			addEventListener (Event.ENTER_FRAME, this_onEnterFrame);
 			
 		} else {
