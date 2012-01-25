@@ -7,6 +7,7 @@ import flash.display.JointStyle;
 import flash.geom.Matrix;
 import flash.geom.Rectangle;
 import format.swf.data.SWFStream;
+import format.swf.symbol.Symbol;
 import format.SWF;
 
 
@@ -235,7 +236,7 @@ class Shape {
 					
 					if (currentFill0 > 0) {
 						
-						fills.push (ShapeEdge.line (currentFill0, penX, penX, px, py));
+						fills.push (ShapeEdge.line (currentFill0, penX, penY, px, py));
 						
 					}
 					
@@ -295,8 +296,6 @@ class Shape {
 		flushCommands (edges, fills);
 		
 		this.swf = null;
-		
-		// Render( new nme.display.DebugGfx());
 		
 	}
 	

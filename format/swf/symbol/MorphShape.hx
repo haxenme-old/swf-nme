@@ -295,7 +295,7 @@ class MorphShape {
 						if (edge) {
 							
 							var px = penX;
-							var py = penX;
+							var py = penY;
 							//mCommands.push( function(g:Graphics,f:Float)
 							//{ g.moveTo(x+(px-x)*f, y+(py-y)*f); } );
 							edgeFound = false;
@@ -414,7 +414,7 @@ class MorphShape {
 					//  to the member variable, not a copy of the current value.
 					
 					penX = px;
-					penX = py;
+					penY = py;
 					
 					commands.push (function (g:Graphics, f:Float) {
 						
