@@ -3,56 +3,48 @@ package format.swf;
 
 import flash.display.DisplayObject;
 import flash.display.Shape;
+import flash.display.Sprite;
 import flash.events.Event;
 import flash.text.TextField;
 import format.swf.data.Frame;
-import format.swf.symbol.Sprite;
 import format.SWF;
 
 
-#if flash
-typedef MovieClipBase = flash.display.Sprite;
-#else
-typedef MovieClipBase = flash.display.MovieClip;
-#end
-
-
-class MovieClip extends MovieClipBase {
+class MovieClip extends Sprite {
 	
 	
-	private static var movieID = 0;
-	private static var previousMovieID = 1;
+	public var currentFrame (default, null):Int;
+	//public var currentFrameLabel (default, null):String;
+	//public var currentLabel (default, null):String;
+	//public var currentLabels (default, null):Array <FrameLabel>;
+	//public var currentScene (default, null):Scene;
+	public var enabled:Bool;
+	public var framesLoaded (default, null):Int;
+	//public var scenes (default, null):Array <Scene>;
+	public var totalFrames (default, null):Int;
+	public var trackAsMenu:Bool;
 	
 	private var activeObjects:Array <ActiveObject>;
 	private var frames:Array <Frame>;
 	private var objectPool:IntHash <List <DisplayObject>>;
 	private var playing:Bool;
 	private var swf:SWF;
-
-	#if flash
-	private var mCurrentFrame:Int;
-	private var mTotalFrames:Int;
-	#end
 	
 	
-	public function new (data:Sprite = null) {
+	public function new (data:format.swf.symbol.Sprite = null) {
 		
 		super ();
 		
-		#if flash
-		mCurrentFrame = 1;
-		mTotalFrames = 1;
-		#end
-		
 		objectPool = new IntHash <List <DisplayObject>> ();
 		
-		movieID = previousMovieID ++;
+		enabled = true;
 		playing = false;
 		
 		if (data != null) {
 			
-			mTotalFrames = data.frameCount;
-			mCurrentFrame = mTotalFrames;
+			totalFrames = data.frameCount;
+			currentFrame = totalFrames;
+			framesLoaded = totalFrames;
 			
 			swf = data.swf;
 			frames = data.frames;
@@ -60,15 +52,20 @@ class MovieClip extends MovieClipBase {
 			
 			gotoAndPlay (1);
 			
+		} else {
+			
+			currentFrame = 1;
+			totalFrames = 1;
+			framesLoaded = 1;
+			
 		}
 		
 	}
 	
 	
-	#if !flash override #end
-	public function gotoAndPlay (frame:Dynamic, ?scene:String):Void {
+	public function gotoAndPlay (frame:Dynamic, scene:String = null):Void {
 		
-		mCurrentFrame = frame;
+		currentFrame = frame;
 		
 		updateObjects ();
 		play ();
@@ -76,10 +73,9 @@ class MovieClip extends MovieClipBase {
 	}
 	
 	
-	#if !flash override #end
-	public function gotoAndStop (frame:Dynamic, ?scene:String):Void {
+	public function gotoAndStop (frame:Dynamic, scene:String = null):Void {
 		
-		mCurrentFrame = frame;
+		currentFrame = frame;
 		
 		updateObjects ();
 		stop ();
@@ -87,10 +83,31 @@ class MovieClip extends MovieClipBase {
 	}
 	
 	
-	#if !flash override #end
+	public function nextFrame ():Void {
+		
+		var next = currentFrame + 1;
+		
+		if (next > totalFrames) {
+			
+			next = totalFrames;
+			
+		}
+		
+		gotoAndStop (next);
+		
+	}
+	
+	
+	/*public function nextScene ():Void {
+		
+		
+		
+	}*/
+	
+	
 	public function play ():Void {
 		
-		if (mTotalFrames > 1) {
+		if (totalFrames > 1) {
 			
 			playing = true;
 			removeEventListener (Event.ENTER_FRAME, this_onEnterFrame);
@@ -105,7 +122,21 @@ class MovieClip extends MovieClipBase {
 	}
 	
 	
-	#if !flash override #end
+	public function prevFrame ():Void {
+		
+		var previous = currentFrame - 1;
+		
+		if (previous < 1) {
+			
+			previous = 1;
+			
+		}
+		
+		gotoAndStop (previous);
+		
+	}
+	
+	
 	public function stop ():Void {
 		
 		playing = false;
@@ -118,7 +149,7 @@ class MovieClip extends MovieClipBase {
 		
 		if (frames != null) {
 			
-			var frame = frames[mCurrentFrame];
+			var frame = frames[currentFrame];
 			var depthChanged = false;
 			var waitingLoader = false;
 			
@@ -158,7 +189,7 @@ class MovieClip extends MovieClipBase {
 						// remove from our "todo" list
 						frameObjects.remove (activeObject.depth);
 						
-						activeObject.index = depthSlot.findClosestFrame (activeObject.index, mCurrentFrame);
+						activeObject.index = depthSlot.findClosestFrame (activeObject.index, currentFrame);
 						var attributes = depthSlot.attributes[activeObject.index];
 						attributes.apply (activeObject.object);
 						
@@ -288,7 +319,7 @@ class MovieClip extends MovieClipBase {
 						
 					}
 					
-					var idx = slot.findClosestFrame (0, mCurrentFrame);
+					var idx = slot.findClosestFrame (0, currentFrame);
 					slot.attributes[idx].apply (displayObject);
 					
 					var act = { object: displayObject, depth: depth, index: idx, symbolID: slot.symbolID, waitingLoader: waitingLoader };
@@ -318,11 +349,11 @@ class MovieClip extends MovieClipBase {
 		
 		if (playing) {
 			
-			mCurrentFrame ++;
+			currentFrame ++;
 			
-			if (mCurrentFrame > mTotalFrames) {
+			if (currentFrame > totalFrames) {
 				
-				mCurrentFrame = 1;
+				currentFrame = 1;
 				
 			}
 			
