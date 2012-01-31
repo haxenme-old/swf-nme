@@ -14,9 +14,9 @@ class MovieClip extends Sprite {
 	
 	
 	public var currentFrame (default, null):Int;
-	//public var currentFrameLabel (default, null):String;
-	//public var currentLabel (default, null):String;
-	//public var currentLabels (default, null):Array <FrameLabel>;
+	public var currentFrameLabel (default, null):String;
+	public var currentLabel (default, null):String;
+	public var currentLabels (default, null):Array <FrameLabel>;
 	//public var currentScene (default, null):Scene;
 	public var enabled:Bool;
 	public var framesLoaded (default, null):Int;
@@ -40,6 +40,10 @@ class MovieClip extends Sprite {
 		enabled = true;
 		playing = false;
 		
+		currentFrameLabel = null;
+		currentLabel = null;
+		currentLabels = new Array <FrameLabel> ();
+		
 		if (data != null) {
 			
 			totalFrames = data.frameCount;
@@ -48,6 +52,14 @@ class MovieClip extends Sprite {
 			
 			swf = data.swf;
 			frames = data.frames;
+			
+			for (label in data.frameLabels.keys ()) {
+				
+				var frameLabel = new FrameLabel (data.frameLabels.get (label), label);
+				currentLabels.push (frameLabel);
+				
+			}
+			
 			activeObjects = new Array <ActiveObject> ();
 			
 			gotoAndPlay (1);
@@ -65,7 +77,24 @@ class MovieClip extends Sprite {
 	
 	public function gotoAndPlay (frame:Dynamic, scene:String = null):Void {
 		
-		currentFrame = frame;
+		if (Std.is (frame, String)) {
+			
+			for (frameLabel in currentLabels) {
+				
+				if (frameLabel.name == frame) {
+					
+					currentFrame = frameLabel.frame;
+					break;
+					
+				}
+				
+			}
+			
+		} else {
+			
+			currentFrame = frame;
+			
+		}
 		
 		updateObjects ();
 		play ();
@@ -75,7 +104,24 @@ class MovieClip extends Sprite {
 	
 	public function gotoAndStop (frame:Dynamic, scene:String = null):Void {
 		
-		currentFrame = frame;
+		if (Std.is (frame, String)) {
+			
+			for (frameLabel in currentLabels) {
+				
+				if (frameLabel.name == frame) {
+					
+					currentFrame = frameLabel.frame;
+					break;
+					
+				}
+				
+			}
+			
+		} else {
+			
+			currentFrame = frame;
+			
+		}
 		
 		updateObjects ();
 		stop ();
@@ -330,6 +376,29 @@ class MovieClip extends Sprite {
 				}
 				
 				activeObjects = newActiveObjects;
+				
+				currentFrameLabel = null;
+				
+				for (frameLabel in currentLabels) {
+					
+					if (frameLabel.frame < frame.frame) {
+						
+						currentLabel = frameLabel.name;
+						
+					} else if (frameLabel.frame == frame.frame) {
+						
+						currentFrameLabel = frameLabel.name;
+						currentLabel = currentFrameLabel;
+						
+						break;
+						
+					} else {
+						
+						break;
+						
+					}
+					
+				}
 				
 			}
 			

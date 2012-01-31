@@ -15,6 +15,7 @@ class Sprite {
 	
 	
 	public var frameCount (default, null):Int;
+	public var frameLabels:Hash<Int>;
 	public var frames (default, null):Array <Frame>;
 	public var swf (default, null):SWF;
 	
@@ -24,7 +25,6 @@ class Sprite {
 	private var filters:Array <BitmapFilter>;
 	private var frame:Frame;
 	
-	private var frameLabels:Hash<Int>;
 	private var name:String;
 	
 	

@@ -3,5 +3,5 @@
     <tag v="cpp"/>
     <tag v="flash"/>
     <description>Provides support for parsing and rendering SWF content</description>
-    <version name="1.06">Added support for 8-bit lossless images</version>
+    <version name="1.07">Added support for frame labels</version>
 </project>
