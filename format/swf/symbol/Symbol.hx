@@ -10,5 +10,6 @@ enum Symbol {
 	fontSymbol (data:Font);
 	staticTextSymbol (data:StaticText);
 	editTextSymbol (data:EditText);
+	buttonSymbol (data:Button);
 	
 }

@@ -3,6 +3,7 @@ package format.swf;
 
 import flash.display.DisplayObject;
 import flash.display.Shape;
+import flash.display.SimpleButton;
 import flash.display.Sprite;
 import flash.events.Event;
 import flash.text.TextField;
@@ -311,6 +312,12 @@ class MovieClip extends Sprite {
 							case fontSymbol (font):
 								
 								throw("Adding font?");
+							
+							case buttonSymbol (button):
+								
+								var b = new SimpleButton ();
+								button.apply (b);
+								displayObject = b;
 							
 						}
 						

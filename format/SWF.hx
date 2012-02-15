@@ -2,12 +2,15 @@ package format;
 
 
 import flash.display.BitmapData;
+import flash.display.DisplayObject;
+import flash.display.SimpleButton;
 import flash.geom.Rectangle;
 import flash.utils.ByteArray;
 import format.swf.data.Frame;
 import format.swf.data.SWFStream;
 import format.swf.data.Tags;
 import format.swf.symbol.Bitmap;
+import format.swf.symbol.Button;
 import format.swf.symbol.EditText;
 import format.swf.symbol.Font;
 import format.swf.symbol.MorphShape;
@@ -62,7 +65,7 @@ class SWF {
 					
 					backgroundColor = stream.readRGB ();
 				
-				case Tags.DefineShape, Tags.DefineShape2, Tags.DefineShape3, Tags.DefineShape4, Tags.DefineMorphShape, Tags.DefineMorphShape2, Tags.DefineSprite, Tags.DefineBitsJPEG2, Tags.DefineBitsJPEG3, Tags.DefineBitsLossless, Tags.DefineBitsLossless2, Tags.DefineFont, Tags.DefineFont2, Tags.DefineFont3, Tags.DefineText, Tags.DefineEditText:
+				case Tags.DefineShape, Tags.DefineShape2, Tags.DefineShape3, Tags.DefineShape4, Tags.DefineMorphShape, Tags.DefineMorphShape2, Tags.DefineSprite, Tags.DefineBitsJPEG2, Tags.DefineBitsJPEG3, Tags.DefineBitsLossless, Tags.DefineBitsLossless2, Tags.DefineFont, Tags.DefineFont2, Tags.DefineFont3, Tags.DefineText, Tags.DefineEditText, Tags.DefineButton, Tags.DefineButton2:
 					
 					var id = stream.readID ();
 					
@@ -82,7 +85,30 @@ class SWF {
 	}
 	
 	
-	public function createInstance (className:String = ""):MovieClip {
+	public function createButton (className:String):SimpleButton {
+		
+		var id = symbols.get (className);
+		
+		switch (getSymbol (id)) {
+			
+			case buttonSymbol (data):
+				
+				var b = new SimpleButton ();
+				data.apply (b);
+				return b;
+			
+			default:
+				
+				return null;
+			
+		}
+		
+		return null;
+		
+	}
+	
+	
+	public function createMovieClip (className:String = ""):MovieClip {
 		
 		var id = 0;
 		
@@ -173,6 +199,9 @@ class SWF {
 					
 					case Tags.DefineSprite: readSprite (false);
 					
+					case Tags.DefineButton: readButton (1);
+					case Tags.DefineButton2: readButton (2);
+					
 					case Tags.DefineBitsJPEG2: readBitmap (false, 2);
 					case Tags.DefineBitsJPEG3: readBitmap (false, 3);
 					case Tags.DefineBitsLossless: readBitmap (true, 1);
@@ -203,6 +232,14 @@ class SWF {
 		
 		var id = stream.readID ();
 		symbolData.set (id, bitmapSymbol (new Bitmap (stream, lossless, version)));
+		
+	}
+	
+	
+	private inline function readButton (version:Int):Void {
+		
+		var id = stream.readID ();
+		symbolData.set (id, buttonSymbol (new Button (this, stream, version)));
 		
 	}
 	
