@@ -6,6 +6,8 @@ import flash.events.Event;
 import flash.geom.Rectangle;
 import flash.utils.ByteArray;
 import format.swf.data.SWFStream;
+import flash.geom.Point;
+import nme.display.BitmapInt32;
 
 #if flash
 import flash.display.Loader;
@@ -142,6 +144,14 @@ class Bitmap {
 			
 			bitmapData = BitmapData.loadFromHaxeBytes (buffer, alpha);
 			
+			if (!lossless && alpha != null) {
+				
+				// NME doesn't currently handle alpha data for JPEG images, so we need to add it ourselves
+				
+				bitmapData = createWithAlpha (bitmapData, alpha);
+				
+			}
+			
 			#end
 			
 		}
@@ -149,9 +159,40 @@ class Bitmap {
 	}
 	
 	
+	private function createWithAlpha (data:BitmapData, alpha:ByteArray):BitmapData {
+		
+		var alphaBitmap = new BitmapData (data.width, data.height, true);
+		var index = 0;
+		
+		for (y in 0...data.height) {
+			
+			for (x in 0...data.width) {
+				
+				#if !neko
+				
+				alphaBitmap.setPixel32 (x, y, data.getPixel (x, y) + (alpha[index ++] << 24));
+				
+				#else
+				
+				var pixel = data.getPixel32 (x, y);
+				pixel.a = alpha[index ++];
+				alphaBitmap.setPixel32 (x, y, pixel);
+				
+				#end
+				
+			}
+			
+		}
+		
+		return alphaBitmap;
+		
+	}
+	
+	
 	
 	
 	// Event Handlers
+	
 	
 	
 	
@@ -172,17 +213,7 @@ class Bitmap {
 				
 			}
 			
-			var index = 0;
-			
-			for (y in 0...height) {
-				
-				for (x in 0...width) {
-					
-					bitmapData.setPixel32 (x, y, bitmapData.getPixel (x, y) | (alpha[index ++] << 24));
-					
-				}
-				
-			}
+			bitmapData = createWithAlpha (bitmapData, alpha);
 			
 		}
 		

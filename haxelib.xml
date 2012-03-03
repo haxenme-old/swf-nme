@@ -3,5 +3,5 @@
     <tag v="cpp"/>
     <tag v="flash"/>
     <description>Provides support for parsing and rendering SWF content</description>
-    <version name="1.08">Added initial support for buttons</version>
+    <version name="1.09">Fixed transparency in DefineBitsJPEG3</version>
 </project>
