@@ -5,7 +5,9 @@ import flash.display.DisplayObject;
 import flash.display.Shape;
 import flash.display.SimpleButton;
 import flash.display.Sprite;
+import flash.filters.BitmapFilter;
 import flash.text.TextField;
+import format.swf.data.Filters;
 import format.swf.data.SWFStream;
 import format.SWF;
 
@@ -14,6 +16,7 @@ class Button {
 	
 	
 	private var buttonRecords:Array <ButtonRecord>;
+	private var filters:Array <BitmapFilter>;
 	private var swf:SWF;
 	
 	
@@ -65,30 +68,7 @@ class Button {
 				
 				if (hasFilterList) {
 					
-					//filters = [];
-					
-					var count = stream.readByte();
-					
-					for (i in 0...count) {
-						
-						var filterID = stream.readByte ();
-						
-						/*filters.push (
-							switch (filterID)
-							{
-								case 0 : createDropShadowFilter (stream);
-								case 1 : createBlurFilter (stream);
-								case 2 : createGlowFilter (stream);
-								case 3 : createBevelFilter (stream);
-								case 4 : createGradientGlowFilter (stream);
-								case 5 : createConvolutionFilter (stream);
-								case 6 : createColorMatrixFilter (stream);
-								case 7 : createGradientBevelFilter (stream);
-								default: throw "Unknown filter : " + filterID + "  " + i + "/" + count; 
-							}
-						);*/
-						
-					}
+					filters = Filters.readFilters (stream);
 					
 				}
 				
@@ -205,6 +185,8 @@ class Button {
 				simpleButton.hitTestState = simpleButton.upState;
 				
 			}
+			
+			simpleButton.filters = filters;
 			
 		}
 		

@@ -5,6 +5,7 @@ import flash.display.BlendMode;
 import flash.filters.BitmapFilter;
 import flash.geom.ColorTransform;
 import flash.geom.Matrix;
+import format.swf.data.Filters;
 import format.swf.data.Frame;
 import format.swf.data.SWFStream;
 import format.swf.data.Tags;
@@ -22,7 +23,6 @@ class Sprite {
 	private var blendMode:BlendMode;
 	private var cacheAsBitmap:Bool;
 	private var className:String;
-	private var filters:Array <BitmapFilter>;
 	private var frame:Frame;
 	
 	private var name:String;
@@ -34,109 +34,10 @@ class Sprite {
 		this.frameCount = frameCount;
 		frames = [ null ]; // frame 0 is empty
 		
-		filters = null;
 		frame = new Frame ();
 		frameLabels = new Hash <Int> ();
 		name = "Sprite " + id;
 		cacheAsBitmap = false;
-		
-	}
-	
-	
-	private function createBevelFilter (stream:SWFStream):BitmapFilter {
-		
-		trace ("CreateBevelFilter");
-		
-		return null;
-		
-	}
-	
-	
-	private function createBlurFilter (stream:SWFStream):BitmapFilter {
-		
-		var blurX = stream.readFixed ();
-		var blurY = stream.readFixed ();
-		var passes = stream.readByte ();
-		
-		trace ("CreateBlurFilter");
-		
-		return null;
-		
-	}
-	
-	
-	private function createColorMatrixFilter (stream:SWFStream):BitmapFilter {
-		
-		trace ("CreateColorMatrixFilter");
-		
-		var matrix = new Array <Float> ();
-		
-		for (i in 0...20) {
-			
-			matrix.push (stream.readFloat ());
-			
-		}
-		
-		return null;
-		
-	}
-	
-	
-	private function createConvolutionFilter (stream:SWFStream):BitmapFilter {
-		
-		trace ("CreateConvolutionFilter");
-		
-		var width = stream.readByte ();
-		var height = stream.readByte ();
-		var div = stream.readFloat ();
-		var bias = stream.readFloat ();
-		var matrix = new Array <Float> ();
-		
-		for (i in 0...width*height) {
-			
-			matrix[i] = stream.readFloat ();
-			
-		}
-		
-		var flags = stream.readByte ();
-		
-		return null;
-		
-	}
-	
-	
-	private function createDropShadowFilter (stream:SWFStream):BitmapFilter {
-		
-		trace ("CreateDropShadowFilter");
-		
-		return null;
-		
-	}
-	
-	
-	private function createGlowFilter (stream:SWFStream):BitmapFilter {
-		
-		trace ("CreateGlowFilter");
-		
-		return null;
-		
-	}
-	
-	
-	private function createGradientBevelFilter (stream:SWFStream):BitmapFilter {
-		
-		trace ("CreateGradientBevelFilter");
-		
-		return null;
-		
-	}
-	
-	
-	private function createGradientGlowFilter (stream:SWFStream):BitmapFilter {
-		
-		trace ("CreateGradientGlowFilter");
-		
-		return null;
 		
 	}
 	
@@ -165,7 +66,7 @@ class Sprite {
 				
 			}
 			
-			frame.place (symbolID, symbol, depth, matrix, colorTransform, null, null);
+			frame.place (symbolID, symbol, depth, matrix, colorTransform, null, null, null);
 			
 		} else if (version == 2 || version == 3) {
 			
@@ -212,6 +113,7 @@ class Sprite {
 			var matrix = hasMatrix ? stream.readMatrix () : null;
 			var colorTransform = hasColorTransform ? stream.readColorTransform (true) : null;
 			var ratio:Null<Int> = hasRatio ? stream.readUInt16 () : null;
+			var name:String = null;
 			
 			if (hasName || (hasImage && hasSymbol)) {
 				
@@ -220,33 +122,11 @@ class Sprite {
 			}
 			
 			var clipDepth = hasClipDepth ? stream.readDepth () : 0;
+			var filters:Array <BitmapFilter> = null;
 			
 			if (hasFilterList) {
 				
-				filters = [];
-				
-				var count = stream.readByte();
-				
-				for (i in 0...count) {
-					
-					var filterID = stream.readByte ();
-					
-					filters.push (
-						switch (filterID)
-						{
-							case 0 : createDropShadowFilter (stream);
-							case 1 : createBlurFilter (stream);
-							case 2 : createGlowFilter (stream);
-							case 3 : createBevelFilter (stream);
-							case 4 : createGradientGlowFilter (stream);
-							case 5 : createConvolutionFilter (stream);
-							case 6 : createColorMatrixFilter (stream);
-							case 7 : createGradientBevelFilter (stream);
-							default: throw "Unknown filter : " + filterID + "  " + i + "/" + count; 
-						}
-					);
-					
-				}
+				filters = Filters.readFilters (stream);
 				
 			}
 			
@@ -291,7 +171,7 @@ class Sprite {
 				if (hasSymbol) {
 					
 					frame.remove (depth);
-					frame.place (symbolID, swf.getSymbol (symbolID), depth, matrix, colorTransform, ratio, name);
+					frame.place (symbolID, swf.getSymbol (symbolID), depth, matrix, colorTransform, ratio, name, filters);
 					
 				} else {
 					
@@ -301,7 +181,7 @@ class Sprite {
 				
 			} else {
 				
-				frame.place (symbolID, swf.getSymbol (symbolID), depth, matrix, colorTransform, ratio, name);
+				frame.place (symbolID, swf.getSymbol (symbolID), depth, matrix, colorTransform, ratio, name, filters);
 				
 			}
 			

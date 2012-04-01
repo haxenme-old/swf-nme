@@ -124,11 +124,15 @@ class StaticText {
 		for (record in records) {
 			
 			var scale = record.height / 1024;
-			var matrix = textMatrix.clone ();
 			
+			var matrix = textMatrix.clone ();
 			matrix.scale (scale, scale);
+			
+			matrix.tx = textMatrix.tx;
+			matrix.ty = textMatrix.ty;
+			
 			matrix.tx += record.offsetX * 0.05;
-			matrix.ty +=  record.offsetY * 0.05;
+			matrix.ty += record.offsetY * 0.05;
 			
 			graphics.lineStyle ();
 			

@@ -334,8 +334,20 @@ class SWFStream {
 	
 	public function readFixed ():Float {
 		
+		alignBits ();
+		
 		var frac = readUInt16 () / 65536.0;
 		return readUInt16 () + frac;
+		
+	}
+	
+	
+	public function readFixed8 ():Float {
+		
+		alignBits ();
+		
+		var frac = readByte () / 256.0;
+		return readByte () + frac;
 		
 	}
 	

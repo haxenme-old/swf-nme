@@ -2,6 +2,7 @@ package format.swf.data;
 
 
 import flash.display.DisplayObject;
+import flash.filters.BitmapFilter;
 import flash.geom.ColorTransform;
 import flash.geom.Matrix;
 
@@ -10,6 +11,7 @@ class DisplayAttributes {
 	
 	
 	public var colorTransform:ColorTransform;
+	public var filters:Array <BitmapFilter>;
 	public var frame:Int;
 	public var matrix:Matrix;
 	public var name:String;
@@ -39,6 +41,12 @@ class DisplayAttributes {
 		}
 		
 		object.name = name;
+		
+		if (object.filters != filters) {
+			
+			object.filters = filters;
+			
+		}
 		
 		if (ratio != null && Std.is (object, MorphObject)) {
 			

@@ -339,6 +339,10 @@ class SWF {
 					
 					// not implemented
 				
+				case Tags.Protect:
+					
+					// ignore
+				
 				default:
 					
 					if (!isStage) {
