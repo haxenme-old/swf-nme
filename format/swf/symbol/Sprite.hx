@@ -170,7 +170,7 @@ class Sprite {
 				
 				if (hasSymbol) {
 					
-					frame.remove (depth);
+					//frame.remove (depth);
 					frame.place (symbolID, swf.getSymbol (symbolID), depth, matrix, colorTransform, ratio, name, filters);
 					
 				} else {

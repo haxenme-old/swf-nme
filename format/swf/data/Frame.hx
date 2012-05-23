@@ -76,7 +76,13 @@ class Frame {
 		
 		if (previousObject != null) {
 			
-			throw("Overwriting non-empty depth");
+			if (matrix == null) {
+				
+				matrix = previousObject.attributes[0].matrix;
+				
+			}
+			
+			//throw("Overwriting non-empty depth");
 			
 		}
 		
