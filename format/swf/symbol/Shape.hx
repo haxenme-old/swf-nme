@@ -14,6 +14,10 @@ import format.SWF;
 class Shape {
 	
 	
+	public var hasBitmapRepeat:Bool;
+	public var hasCurves:Bool;
+	public var hasGradientFill:Bool;
+	
 	private static var ftSolid = 0x00;
 	private static var ftLinear = 0x10;
 	private static var ftRadial = 0x12;
@@ -264,6 +268,8 @@ class Shape {
 					
 					if (currentLine > 0) {
 						
+						hasCurves = true;
+						
 						edges.push (function (g:Graphics) {
 							
 							g.curveTo (cx, cy, px, py);
@@ -456,6 +462,8 @@ class Shape {
 				var focus = fill == ftRadialF ? stream.readByte () / 255.0 : 0.0;
 				var type = fill == ftLinear ? GradientType.LINEAR : GradientType.RADIAL;
 				
+				hasGradientFill = true;
+				
 				result.push (function (g:Graphics) {
 					
 					g.beginGradientFill (type, colors, alphas, ratios, matrix, spread, interp, focus);
@@ -501,6 +509,12 @@ class Shape {
 				}
 				
 				if (bitmap != null) {
+					
+					if (repeat) {
+						
+						hasBitmapRepeat = true;
+						
+					}
 					
 					result.push (function (g:Graphics) {
 						

@@ -78,26 +78,31 @@ class MovieClip extends Sprite {
 	
 	public function gotoAndPlay (frame:Dynamic, scene:String = null):Void {
 		
-		if (Std.is (frame, String)) {
+		if (frame != currentFrame) {
 			
-			for (frameLabel in currentLabels) {
+			if (Std.is (frame, String)) {
 				
-				if (frameLabel.name == frame) {
+				for (frameLabel in currentLabels) {
 					
-					currentFrame = frameLabel.frame;
-					break;
+					if (frameLabel.name == frame) {
+						
+						currentFrame = frameLabel.frame;
+						break;
+						
+					}
 					
 				}
 				
+			} else {
+				
+				currentFrame = frame;
+				
 			}
 			
-		} else {
-			
-			currentFrame = frame;
+			updateObjects ();
 			
 		}
 		
-		updateObjects ();
 		play ();
 		
 	}
@@ -105,26 +110,31 @@ class MovieClip extends Sprite {
 	
 	public function gotoAndStop (frame:Dynamic, scene:String = null):Void {
 		
-		if (Std.is (frame, String)) {
+		if (frame != currentFrame) {
 			
-			for (frameLabel in currentLabels) {
+			if (Std.is (frame, String)) {
 				
-				if (frameLabel.name == frame) {
+				for (frameLabel in currentLabels) {
 					
-					currentFrame = frameLabel.frame;
-					break;
+					if (frameLabel.name == frame) {
+						
+						currentFrame = frameLabel.frame;
+						break;
+						
+					}
 					
 				}
 				
+			} else {
+				
+				currentFrame = frame;
+				
 			}
 			
-		} else {
-			
-			currentFrame = frame;
+			updateObjects ();
 			
 		}
 		
-		updateObjects ();
 		stop ();
 		
 	}
@@ -281,7 +291,13 @@ class MovieClip extends Sprite {
 							case shapeSymbol (shape):
 								
 								var s = new Shape ();
-								s.cacheAsBitmap = true; // temp fix
+								
+								if (shape.hasBitmapRepeat || shape.hasCurves || shape.hasGradientFill) {
+									
+									s.cacheAsBitmap = true; // temp fix
+									
+								}
+								
 								//shape.Render(new nme.display.DebugGfx());
 								waitingLoader = shape.render (s.graphics);
 								displayObject = s;
@@ -384,6 +400,7 @@ class MovieClip extends Sprite {
 				
 				activeObjects = newActiveObjects;
 				
+				currentFrameLabel = null;
 				currentFrameLabel = null;
 				
 				for (frameLabel in currentLabels) {
