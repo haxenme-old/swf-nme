@@ -63,7 +63,10 @@ class MovieClip extends Sprite {
 			
 			activeObjects = new Array <ActiveObject> ();
 			
-			gotoAndPlay (1);
+			//gotoAndPlay (1);
+			currentFrame = 1;
+			updateObjects ();
+			play ();
 			
 		} else {
 			
