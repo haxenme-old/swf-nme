@@ -11,18 +11,18 @@ import format.swf.data.Frame;
 import format.SWF;
 
 
-class MovieClip extends Sprite {
+class MovieClip extends #if flash Sprite #else nme.display.MovieClip #end {
 	
 	
-	public var currentFrame (default, null):Int;
+	#if flash public var currentFrame (default, null):Int; #end
 	public var currentFrameLabel (default, null):String;
 	public var currentLabel (default, null):String;
 	public var currentLabels (default, null):Array <FrameLabel>;
 	//public var currentScene (default, null):Scene;
-	public var enabled:Bool;
-	public var framesLoaded (default, null):Int;
+	#if flash public var enabled:Bool; #end
+	#if flash public var framesLoaded (default, null):Int; #end
 	//public var scenes (default, null):Array <Scene>;
-	public var totalFrames (default, null):Int;
+	#if flash public var totalFrames (default, null):Int; #end
 	public var trackAsMenu:Bool;
 	
 	private var activeObjects:Array <ActiveObject>;
@@ -79,7 +79,7 @@ class MovieClip extends Sprite {
 	}
 	
 	
-	public function gotoAndPlay (frame:Dynamic, scene:String = null):Void {
+	public #if !flash override #end function gotoAndPlay (frame:Dynamic, scene:String = null):Void {
 		
 		if (frame != currentFrame) {
 			
@@ -111,7 +111,7 @@ class MovieClip extends Sprite {
 	}
 	
 	
-	public function gotoAndStop (frame:Dynamic, scene:String = null):Void {
+	public #if !flash override #end function gotoAndStop (frame:Dynamic, scene:String = null):Void {
 		
 		if (frame != currentFrame) {
 			
@@ -165,7 +165,7 @@ class MovieClip extends Sprite {
 	}*/
 	
 	
-	public function play ():Void {
+	public #if !flash override #end function play ():Void {
 		
 		if (totalFrames > 1) {
 			
@@ -197,7 +197,7 @@ class MovieClip extends Sprite {
 	}
 	
 	
-	public function stop ():Void {
+	public #if !flash override #end function stop ():Void {
 		
 		playing = false;
 		removeEventListener (Event.ENTER_FRAME, this_onEnterFrame);
