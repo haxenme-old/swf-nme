@@ -47,8 +47,8 @@ class MovieClip extends #if flash Sprite #else nme.display.MovieClip #end {
 		
 		if (data != null) {
 			
-			totalFrames = data.frameCount;
-			currentFrame = totalFrames;
+			#if flash totalFrames #else mTotalFrames #end = data.frameCount;
+			#if flash currentFrame #else mCurrentFrame #end = #if flash totalFrames #else mTotalFrames #end;
 			framesLoaded = totalFrames;
 			
 			swf = data.swf;
@@ -64,14 +64,14 @@ class MovieClip extends #if flash Sprite #else nme.display.MovieClip #end {
 			activeObjects = new Array <ActiveObject> ();
 			
 			//gotoAndPlay (1);
-			currentFrame = 1;
+			#if flash currentFrame #else mCurrentFrame #end = 1;
 			updateObjects ();
 			play ();
 			
 		} else {
 			
-			currentFrame = 1;
-			totalFrames = 1;
+			#if flash currentFrame #else mCurrentFrame #end = 1;
+			#if flash totalFrames #else mTotalFrames #end = 1;
 			framesLoaded = 1;
 			
 		}
@@ -81,7 +81,7 @@ class MovieClip extends #if flash Sprite #else nme.display.MovieClip #end {
 	
 	public #if !flash override #end function gotoAndPlay (frame:Dynamic, scene:String = null):Void {
 		
-		if (frame != currentFrame) {
+		if (frame != #if flash currentFrame #else mCurrentFrame #end) {
 			
 			if (Std.is (frame, String)) {
 				
@@ -89,7 +89,7 @@ class MovieClip extends #if flash Sprite #else nme.display.MovieClip #end {
 					
 					if (frameLabel.name == frame) {
 						
-						currentFrame = frameLabel.frame;
+						#if flash currentFrame #else mCurrentFrame #end = frameLabel.frame;
 						break;
 						
 					}
@@ -98,7 +98,7 @@ class MovieClip extends #if flash Sprite #else nme.display.MovieClip #end {
 				
 			} else {
 				
-				currentFrame = frame;
+				#if flash currentFrame #else mCurrentFrame #end = frame;
 				
 			}
 			
@@ -113,7 +113,7 @@ class MovieClip extends #if flash Sprite #else nme.display.MovieClip #end {
 	
 	public #if !flash override #end function gotoAndStop (frame:Dynamic, scene:String = null):Void {
 		
-		if (frame != currentFrame) {
+		if (frame != #if flash currentFrame #else mCurrentFrame #end) {
 			
 			if (Std.is (frame, String)) {
 				
@@ -121,7 +121,7 @@ class MovieClip extends #if flash Sprite #else nme.display.MovieClip #end {
 					
 					if (frameLabel.name == frame) {
 						
-						currentFrame = frameLabel.frame;
+						#if flash currentFrame #else mCurrentFrame #end = frameLabel.frame;
 						break;
 						
 					}
@@ -130,7 +130,7 @@ class MovieClip extends #if flash Sprite #else nme.display.MovieClip #end {
 				
 			} else {
 				
-				currentFrame = frame;
+				#if flash currentFrame #else mCurrentFrame #end = frame;
 				
 			}
 			
@@ -145,11 +145,11 @@ class MovieClip extends #if flash Sprite #else nme.display.MovieClip #end {
 	
 	public function nextFrame ():Void {
 		
-		var next = currentFrame + 1;
+		var next = #if flash currentFrame #else mCurrentFrame #end + 1;
 		
-		if (next > totalFrames) {
+		if (next > #if flash totalFrames #else mTotalFrames #end) {
 			
-			next = totalFrames;
+			next = #if flash totalFrames #else mTotalFrames #end;
 			
 		}
 		
@@ -167,7 +167,7 @@ class MovieClip extends #if flash Sprite #else nme.display.MovieClip #end {
 	
 	public #if !flash override #end function play ():Void {
 		
-		if (totalFrames > 1) {
+		if (#if flash totalFrames #else mTotalFrames #end > 1) {
 			
 			playing = true;
 			removeEventListener (Event.ENTER_FRAME, this_onEnterFrame);
@@ -184,7 +184,7 @@ class MovieClip extends #if flash Sprite #else nme.display.MovieClip #end {
 	
 	public function prevFrame ():Void {
 		
-		var previous = currentFrame - 1;
+		var previous = #if flash currentFrame #else mCurrentFrame #end - 1;
 		
 		if (previous < 1) {
 			
@@ -209,7 +209,7 @@ class MovieClip extends #if flash Sprite #else nme.display.MovieClip #end {
 		
 		if (frames != null) {
 			
-			var frame = frames[currentFrame];
+			var frame = frames[#if flash currentFrame #else mCurrentFrame #end];
 			var depthChanged = false;
 			var waitingLoader = false;
 			
@@ -249,7 +249,7 @@ class MovieClip extends #if flash Sprite #else nme.display.MovieClip #end {
 						// remove from our "todo" list
 						frameObjects.remove (activeObject.depth);
 						
-						activeObject.index = depthSlot.findClosestFrame (activeObject.index, currentFrame);
+						activeObject.index = depthSlot.findClosestFrame (activeObject.index, #if flash currentFrame #else mCurrentFrame #end);
 						var attributes = depthSlot.attributes[activeObject.index];
 						attributes.apply (activeObject.object);
 						
@@ -391,7 +391,7 @@ class MovieClip extends #if flash Sprite #else nme.display.MovieClip #end {
 						
 					}
 					
-					var idx = slot.findClosestFrame (0, currentFrame);
+					var idx = slot.findClosestFrame (0, #if flash currentFrame #else mCurrentFrame #end);
 					slot.attributes[idx].apply (displayObject);
 					
 					var act = { object: displayObject, depth: depth, index: idx, symbolID: slot.symbolID, waitingLoader: waitingLoader };
@@ -445,11 +445,11 @@ class MovieClip extends #if flash Sprite #else nme.display.MovieClip #end {
 		
 		if (playing) {
 			
-			currentFrame ++;
+			#if flash currentFrame #else mCurrentFrame #end ++;
 			
-			if (currentFrame > totalFrames) {
+			if (#if flash currentFrame #else mCurrentFrame #end > #if flash totalFrames #else mTotalFrames #end) {
 				
-				currentFrame = 1;
+				#if flash currentFrame #else mCurrentFrame #end = 1;
 				
 			}
 			
