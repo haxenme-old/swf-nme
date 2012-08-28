@@ -1,5 +1,6 @@
-<project name="swf" url="http://www.joshuagranick.com" license="MIT">
+<project name="swf" url="http://github.com/haxenme/swf" license="MIT">
     <user name="elyon"/>
+    <user name="gamehaxe"/>
     <tag v="cpp"/>
     <tag v="flash"/>
     <description>Provides support for parsing and rendering SWF content</description>
