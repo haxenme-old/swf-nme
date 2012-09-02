@@ -33,6 +33,7 @@ class SWFStream {
 	public function new (bytes:ByteArray) {
 		
 		stream = bytes;
+		stream.position = 0;
 		
 		var signature = "";
 		
