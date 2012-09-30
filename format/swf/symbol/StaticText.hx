@@ -34,7 +34,7 @@ class StaticText {
 		
 		stream.alignBits ();
 		
-		var offsetY = 0.0;
+		var offsetY = 0;
 		
 		while (stream.readBool ()) {
 			
@@ -80,13 +80,8 @@ class StaticText {
 				
 			}
 			
-			var offsetX:Float = hasX ? stream.readSInt16 () : 0;
-			
-			if (hasY) {
-				
-				offsetY = stream.readSInt16 ();
-				
-			}
+			var offsetX = hasX ? stream.readSInt16 () : 0;
+			var offsetY = hasY ? stream.readSInt16 () : 0;
 			
 			if (hasFont) {
 				
@@ -107,6 +102,8 @@ class StaticText {
 			
 			records.push ( {
 				
+				setStyle: hasColor || hasFont,
+				setPosition: hasX && hasY, 
 				swfFont: font,
 				offsetX : offsetX,
 				offsetY : offsetY,
@@ -114,7 +111,7 @@ class StaticText {
 				color : color,
 				alpha : alpha,
 				height : height,
-				advances : advances
+				advances : advances,
 				
 			});
 			
@@ -127,15 +124,28 @@ class StaticText {
 	
 	public function render (graphics:Graphics) {
 		
+		var matrix = null;
+		var cacheMatrix = null;
+		
 		for (record in records) {
 			
 			var scale = record.height / 1024;
-			var matrix = textMatrix.clone ();
 			
+			cacheMatrix = matrix;
+			matrix = textMatrix.clone ();
 			matrix.scale (scale, scale);
 			
-			matrix.tx = (textMatrix.tx + record.offsetX) * 0.05;
-			matrix.ty = (textMatrix.ty + record.offsetY) * 0.05;
+			if (cacheMatrix != null && record.setStyle && !record.setPosition) {
+				
+				matrix.tx = cacheMatrix.tx;
+				matrix.ty = cacheMatrix.ty;
+				
+			} else {
+			
+				matrix.tx = (textMatrix.tx + record.offsetX) * 0.05;
+				matrix.ty = (textMatrix.ty + record.offsetY) * 0.05;
+				
+			}
 			
 			graphics.lineStyle ();
 			
@@ -159,10 +169,13 @@ class StaticText {
 
 typedef TextRecord = {
 	
+	var setStyle:Bool;
+	var setPosition:Bool;
+	
 	var swfFont:Font;
 	
-	var offsetX:Float;
-	var offsetY:Float;
+	var offsetX:Int;
+	var offsetY:Int;
 	var height:Float;
 	
 	var color:Int;

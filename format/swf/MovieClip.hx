@@ -404,7 +404,6 @@ class MovieClip extends #if flash Sprite #else nme.display.MovieClip #end {
 				activeObjects = newActiveObjects;
 				
 				currentFrameLabel = null;
-				currentFrameLabel = null;
 				
 				for (frameLabel in currentLabels) {
 					

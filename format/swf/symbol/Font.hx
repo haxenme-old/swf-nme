@@ -86,7 +86,7 @@ class Font {
 				
 			}
 			
-			codeOffset = fontBytes - codeOffset;
+			codeOffset = fontBytes > 0 ? fontBytes - codeOffset : 0;
 			
 		} else {
 			
@@ -250,9 +250,7 @@ class Font {
 			
 			if (stream.getBytesLeft () != codeOffset) {
 				
-				//trace (stream.getBytesLeft ());
-				//trace (codeOffset);
-				//throw ("Code offset miscalculation");
+				throw ("Code offset miscalculation");
 				
 			}
 			
