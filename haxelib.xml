@@ -4,5 +4,5 @@
     <tag v="cpp"/>
     <tag v="flash"/>
     <description>Provides support for parsing and rendering SWF content</description>
-    <version name="1.13">Big performance boost for most SWF shapes</version>
+    <version name="1.14">Improvements to static text</version>
 </project>
