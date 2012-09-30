@@ -250,7 +250,9 @@ class Font {
 			
 			if (stream.getBytesLeft () != codeOffset) {
 				
-				throw ("Code offset miscalculation");
+				//trace (stream.getBytesLeft ());
+				//trace (codeOffset);
+				//throw ("Code offset miscalculation");
 				
 			}
 			
@@ -322,7 +324,7 @@ class Font {
 			
 		}
 		
-		return 1024.0;
+		return 1024;
 		
 	}
 	

@@ -34,6 +34,8 @@ class StaticText {
 		
 		stream.alignBits ();
 		
+		var offsetY = 0.0;
+		
 		while (stream.readBool ()) {
 			
 			stream.readBits (3);
@@ -78,8 +80,13 @@ class StaticText {
 				
 			}
 			
-			var offsetX = hasX ? stream.readSInt16 () : 0;
-			var offsetY = hasY ? stream.readSInt16 () : 0;
+			var offsetX:Float = hasX ? stream.readSInt16 () : 0;
+			
+			if (hasY) {
+				
+				offsetY = stream.readSInt16 ();
+				
+			}
 			
 			if (hasFont) {
 				
@@ -88,13 +95,12 @@ class StaticText {
 			}
 			
 			var count = stream.readByte ();
-			
 			var glyphs = new Array <Int> ();
 			var advances = new Array <Int> ();
 			
 			for (i in 0...count) {
 				
-				glyphs.push (stream.readBits (glyphBits) );
+				glyphs.push (stream.readBits (glyphBits));
 				advances.push (stream.readBits (advanceBits, true));
 				
 			}
@@ -124,21 +130,16 @@ class StaticText {
 		for (record in records) {
 			
 			var scale = record.height / 1024;
-			
 			var matrix = textMatrix.clone ();
+			
 			matrix.scale (scale, scale);
 			
-			matrix.tx = textMatrix.tx;
-			matrix.ty = textMatrix.ty;
-			
-			matrix.tx += record.offsetX * 0.05;
-			matrix.ty += record.offsetY * 0.05;
+			matrix.tx = (textMatrix.tx + record.offsetX) * 0.05;
+			matrix.ty = (textMatrix.ty + record.offsetY) * 0.05;
 			
 			graphics.lineStyle ();
 			
 			for (i in 0...record.glyphs.length) {
-				
-				var tx = matrix.tx;
 				
 				graphics.beginFill (record.color, record.alpha);
 				record.swfFont.renderGlyph (graphics, record.glyphs[i], matrix);
@@ -160,8 +161,8 @@ typedef TextRecord = {
 	
 	var swfFont:Font;
 	
-	var offsetX:Int;
-	var offsetY:Int;
+	var offsetX:Float;
+	var offsetY:Float;
 	var height:Float;
 	
 	var color:Int;
