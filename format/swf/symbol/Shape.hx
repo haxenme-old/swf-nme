@@ -459,7 +459,7 @@ class Shape {
 					
 				}
 				
-				var focus = fill == ftRadialF ? stream.readByte () / 255.0 : 0.0;
+				var focus = fill == ftRadialF ? stream.readFixed8 () : 0.0;
 				var type = fill == ftLinear ? GradientType.LINEAR : GradientType.RADIAL;
 				
 				hasGradientFill = true;
