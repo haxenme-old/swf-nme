@@ -1,6 +1,8 @@
 package format.swf;
 
 
+import flash.display.Bitmap;
+import flash.display.BitmapData;
 import flash.display.DisplayObject;
 import flash.display.Shape;
 import flash.display.SimpleButton;
@@ -75,6 +77,39 @@ class MovieClip extends #if flash Sprite #else nme.display.MovieClip #end {
 			framesLoaded = 1;
 			
 		}
+		
+	}
+	
+	
+	public function flatten ():Void {
+		
+		// Should we support flatten + playing multiple frames?
+		
+		//if (#if flash totalFrames #else mTotalFrames #end == 1) {
+			
+			var bounds = getBounds (this);
+			var bitmapData = new BitmapData (Std.int (bounds.right), Std.int (bounds.bottom), true, #if neko { a: 0, rgb: 0x000000 } #else 0x00000000 #end);
+			bitmapData.draw (this);
+			
+			for (activeObject in activeObjects) {
+				
+				removeChild (activeObject.object);
+				
+			}
+			
+			var bitmap = new Bitmap (bitmapData);
+			bitmap.smoothing = true;
+			addChild (bitmap);
+			
+			var object:ActiveObject = { object: cast (bitmap, DisplayObject), depth: 0, symbolID: -1, index: 0, waitingLoader: false };
+			
+			activeObjects = [ object ];
+			
+		//} else {
+			
+			//trace ("Warning: Cannot flatten MovieClips with multiple frames (yet)");
+			
+		//}
 		
 	}
 	
@@ -201,6 +236,13 @@ class MovieClip extends #if flash Sprite #else nme.display.MovieClip #end {
 		
 		playing = false;
 		removeEventListener (Event.ENTER_FRAME, this_onEnterFrame);
+		
+	}
+	
+	
+	public function unflatten ():Void {
+		
+		updateObjects ();
 		
 	}
 	

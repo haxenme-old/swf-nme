@@ -185,10 +185,6 @@ class Sprite {
 					
 					frame.place (symbolID, swf.getSymbol (symbolID), depth, matrix, colorTransform, ratio, name, filters);
 					
-				} else {
-					
-					trace (symbolID);
-					
 				}
 				
 			}
