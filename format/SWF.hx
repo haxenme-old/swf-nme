@@ -65,7 +65,7 @@ class SWF {
 					
 					backgroundColor = stream.readRGB ();
 				
-				case Tags.DefineShape, Tags.DefineShape2, Tags.DefineShape3, Tags.DefineShape4, Tags.DefineMorphShape, Tags.DefineMorphShape2, Tags.DefineSprite, Tags.DefineBitsJPEG2, Tags.DefineBitsJPEG3, Tags.DefineBitsLossless, Tags.DefineBitsLossless2, Tags.DefineFont, Tags.DefineFont2, Tags.DefineFont3, Tags.DefineText, Tags.DefineEditText, Tags.DefineButton, Tags.DefineButton2:
+				case Tags.DefineShape, Tags.DefineShape2, Tags.DefineShape3, Tags.DefineShape4, Tags.DefineMorphShape, Tags.DefineMorphShape2, Tags.DefineSprite, Tags.DefineBitsJPEG2, Tags.DefineBitsJPEG3, Tags.DefineBitsLossless, Tags.DefineBitsLossless2, Tags.DefineFont, Tags.DefineFont2, Tags.DefineFont3, Tags.DefineText, Tags.DefineText2, Tags.DefineEditText, Tags.DefineButton, Tags.DefineButton2:
 					
 					var id = stream.readID ();
 					
@@ -74,6 +74,11 @@ class SWF {
 				case Tags.SymbolClass:
 					
 					readSymbolClass ();
+				
+				//default:
+					
+					//trace ("Unhandled symbol tag: " + type);
+					//trace (stream.readID ());
 				
 			}
 			
@@ -212,6 +217,7 @@ class SWF {
 					case Tags.DefineFont3: readFont (3);
 					
 					case Tags.DefineText: readText (1);
+					case Tags.DefineText2: readText (2);
 					case Tags.DefineEditText: readEditText (1);
 					
 				}
@@ -224,6 +230,13 @@ class SWF {
 		}
 		
 		return symbolData.get (id);
+		
+	}
+	
+	
+	public function hasSymbol (id:Int):Bool {
+		
+		return streamPositions.exists (id);
 		
 	}
 	

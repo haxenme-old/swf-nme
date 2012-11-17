@@ -141,9 +141,9 @@ class StaticText {
 				matrix.ty = cacheMatrix.ty;
 				
 			} else {
-			
-				matrix.tx = (textMatrix.tx + record.offsetX) * 0.05;
-				matrix.ty = (textMatrix.ty + record.offsetY) * 0.05;
+				
+				matrix.tx = textMatrix.tx + (record.offsetX) * 0.05;
+				matrix.ty = textMatrix.ty + (record.offsetY) * 0.05;
 				
 			}
 			
