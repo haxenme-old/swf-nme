@@ -32,6 +32,7 @@ class SWF {
 	public var symbols:Hash <Int>;
 	public var width (default, null):Int;
 	
+	private var jpegTables:ByteArray;
 	private var symbolData:IntHash <Symbol>;
 	private var stream:SWFStream;
 	private var streamPositions:IntHash <Int>;
@@ -65,7 +66,7 @@ class SWF {
 					
 					backgroundColor = stream.readRGB ();
 				
-				case Tags.DefineShape, Tags.DefineShape2, Tags.DefineShape3, Tags.DefineShape4, Tags.DefineMorphShape, Tags.DefineMorphShape2, Tags.DefineSprite, Tags.DefineBitsJPEG2, Tags.DefineBitsJPEG3, Tags.DefineBitsLossless, Tags.DefineBitsLossless2, Tags.DefineFont, Tags.DefineFont2, Tags.DefineFont3, Tags.DefineText, Tags.DefineText2, Tags.DefineEditText, Tags.DefineButton, Tags.DefineButton2:
+				case Tags.DefineShape, Tags.DefineShape2, Tags.DefineShape3, Tags.DefineShape4, Tags.DefineMorphShape, Tags.DefineMorphShape2, Tags.DefineSprite, Tags.DefineBits, Tags.DefineBitsJPEG2, Tags.DefineBitsJPEG3, Tags.DefineBitsLossless, Tags.DefineBitsLossless2, Tags.DefineFont, Tags.DefineFont2, Tags.DefineFont3, Tags.DefineText, Tags.DefineText2, Tags.DefineEditText, Tags.DefineButton, Tags.DefineButton2:
 					
 					var id = stream.readID ();
 					
@@ -74,14 +75,21 @@ class SWF {
 				case Tags.SymbolClass:
 					
 					readSymbolClass ();
+				
+				case Tags.JPEGTables:
 					
+					// why is this not working?
+					
+					var size = stream.getBytesLeft ();
+					jpegTables = stream.readBytes (size);
+				
 				case Tags.DefineSceneAndFrameLabelData:
 					
 					// currently ignored
 				
 				default:
 					
-					#if nme_install_tool
+					#if neko
 					
 					for (tagName in Type.getClassFields (Tags)) {
 						
@@ -226,6 +234,7 @@ class SWF {
 					case Tags.DefineButton: readButton (1);
 					case Tags.DefineButton2: readButton (2);
 					
+					case Tags.DefineBits: readBitmap (false, 1);
 					case Tags.DefineBitsJPEG2: readBitmap (false, 2);
 					case Tags.DefineBitsJPEG3: readBitmap (false, 3);
 					case Tags.DefineBitsLossless: readBitmap (true, 1);
@@ -263,7 +272,7 @@ class SWF {
 	private inline function readBitmap (lossless:Bool, version:Int):Void {
 		
 		var id = stream.readID ();
-		symbolData.set (id, bitmapSymbol (new Bitmap (stream, lossless, version)));
+		symbolData.set (id, bitmapSymbol (new Bitmap (stream, lossless, version, jpegTables)));
 		
 	}
 	

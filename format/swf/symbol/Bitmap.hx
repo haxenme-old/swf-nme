@@ -25,7 +25,7 @@ class Bitmap {
 	#end
 	
 	
-	public function new (stream:SWFStream, lossless:Bool, version:Int) {
+	public function new (stream:SWFStream, lossless:Bool, version:Int, jpegTables:ByteArray = null) {
 		
 		if (lossless) {
 			
@@ -117,7 +117,11 @@ class Bitmap {
 			var buffer:ByteArray = null;
 			var alpha:ByteArray = null;
 			
-			if (version == 2) {
+			if (version == 1 && jpegTables != null) {
+				
+				buffer = jpegTables;
+				
+			} else if (version == 2) {
 				
 				var size = stream.getBytesLeft ();
 				buffer = stream.readBytes (size);
