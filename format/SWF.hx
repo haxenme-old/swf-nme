@@ -74,11 +74,30 @@ class SWF {
 				case Tags.SymbolClass:
 					
 					readSymbolClass ();
-				
-				//default:
 					
-					//trace ("Unhandled symbol tag: " + type);
-					//trace (stream.readID ());
+				case Tags.DefineSceneAndFrameLabelData:
+					
+					// currently ignored
+				
+				default:
+					
+					#if nme_install_tool
+					
+					for (tagName in Type.getClassFields (Tags)) {
+						
+						if (Reflect.field (Tags, tagName) == tag) {
+							
+							if (StringTools.startsWith (tagName, "Define")) {
+								
+								Sys.println ("Warning: Ignoring symbol " + stream.readID () + " (Tags." + tagName + ")");
+								
+							}
+							
+						}
+						
+					}
+					
+					#end
 				
 			}
 			
