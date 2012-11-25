@@ -4,5 +4,5 @@
     <tag v="cpp"/>
     <tag v="flash"/>
     <description>Provides support for parsing and rendering SWF content</description>
-    <version name="1.16">Added "flatten" and "unflatten" to format.swf.MovieClip</version>
+    <version name="1.17">Minor changes for future NME compatibility</version>
 </project>
