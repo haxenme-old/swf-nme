@@ -284,11 +284,12 @@ class StringUtils
 						var sign:Int = SIGN_UNDEF;
 						switch(type) {
 							case "s":
-								valueStr = value.toString();
+								valueStr = Std.string (value);
 								if(precision != -1) { valueStr = valueStr.substr(0, precision); }
 								break;
 							case "c":
-								valueStr = value.toString().getAt(0);
+								//valueStr = Std.string (value).getAt(0);
+								valueStr = Std.string (value).charAt(0);
 								break;
 							case "d":
 							case "i":

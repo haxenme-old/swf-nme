@@ -55,7 +55,7 @@ class HalfPrecisionWriter
 		var significand:Int;
 		var halfSignificand:Int;
 		var signedExponent:Int;
-		var result:Int;			
+		var result:Int = 0;			
 		var p:Int;
 		
 		p = data.position;
@@ -64,6 +64,9 @@ class HalfPrecisionWriter
 		dword = data.readUnsignedInt();
 		data.position = p;
 		
+		#if (neko && !neko_v2)
+		result = dword >> 16;
+		#else
 		if ((dword & 0x7FFFFFFF) == 0) {												// Signed zero
 			result = dword >> 16;	
 		}
@@ -115,6 +118,7 @@ class HalfPrecisionWriter
 				}
 			}
 		}
+		#end
 		
 		data.writeShort(result);		
 		//data.length = p + 2;

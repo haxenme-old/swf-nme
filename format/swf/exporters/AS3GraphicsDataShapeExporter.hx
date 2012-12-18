@@ -74,7 +74,9 @@ class AS3GraphicsDataShapeExporter extends DefaultShapeExporter
 		cleanUpGraphicsPath();
 		var symbol = swf.getCharacter (bitmapId);
 		var bitmap = new Bitmap (symbol);
-		graphicsData.push (new GraphicsBitmapFill (bitmap.bitmapData, matrix, repeat, smooth));
+		if (bitmap.bitmapData != null) {
+			graphicsData.push (new GraphicsBitmapFill (bitmap.bitmapData, matrix, repeat, smooth));
+		}
 		// TODO
 	}
 	

@@ -179,10 +179,12 @@ class SWFShape
 	}
 	
 	private function determineReferencePoint():Void {
-		var styleChangeRecord:SWFShapeRecordStyleChange = cast (records[0], SWFShapeRecordStyleChange);
-		if(styleChangeRecord != null && styleChangeRecord.stateMoveTo) {
-			referencePoint.x = NumberUtils.roundPixels400(styleChangeRecord.moveDeltaX / unitDivisor);
-			referencePoint.y = NumberUtils.roundPixels400(styleChangeRecord.moveDeltaY / unitDivisor);
+		if (Std.is (records[0], SWFShapeRecordStyleChange)) {
+			var styleChangeRecord:SWFShapeRecordStyleChange = cast records[0];
+			if(styleChangeRecord != null && styleChangeRecord.stateMoveTo) {
+				referencePoint.x = NumberUtils.roundPixels400(styleChangeRecord.moveDeltaX / unitDivisor);
+				referencePoint.y = NumberUtils.roundPixels400(styleChangeRecord.moveDeltaY / unitDivisor);
+			}
 		}
 	}
 	

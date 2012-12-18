@@ -26,7 +26,7 @@ class SWFColorTransform
 	}
 	
 	private function get_colorTransform():ColorTransform {
-		return new ColorTransform(rMult, gMult, bMult, aMult, rAdd, gAdd, bAdd, aAdd);
+		return new ColorTransform(1 - rMult, 1 - gMult, 1 - bMult, 1 - aMult, rAdd, gAdd, bAdd, aAdd);
 	}
 	
 	public function parse(data:SWFData):Void {

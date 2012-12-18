@@ -15,9 +15,6 @@ class FrameObject
 	public var placedAtIndex:Int;
 	// The tag index of the PlaceObject tag that modified this object (optional)
 	public var lastModifiedAtIndex:Int;
-
-	public var matrix:Matrix;
-	public var name:String;
 	
 	// Whether this is a keyframe or not
 	public var isKeyframe:Bool;
@@ -40,7 +37,8 @@ class FrameObject
 		return new FrameObject(depth, characterId, className, placedAtIndex, lastModifiedAtIndex, false);
 	}
 	
-	public function toString(indent:Int = 0):String {
+	public function toString(/*indent:Int = 0*/):String {
+		var indent = 0;
 		var str:String = "\n" + StringUtils.repeat(indent + 2) +
 			"Depth: " + depth + (layer > -1 ? " (Layer " + layer + ")" : "") + ", " +
 			"CharacterId: " + characterId + ", ";

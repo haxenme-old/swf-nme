@@ -3,13 +3,18 @@ package format.swf.instance;
 
 import flash.display.DisplayObject;
 import flash.display.Shape;
+import flash.geom.ColorTransform;
+import flash.text.TextField;
+import flash.text.TextFormat;
 import flash.events.Event;
 import flash.Lib;
 import format.swf.exporters.AS3GraphicsDataShapeExporter;
 import format.swf.tags.TagDefineBits;
 import format.swf.tags.TagDefineBitsLossless;
+import format.swf.tags.TagDefineEditText;
 import format.swf.tags.TagDefineShape;
 import format.swf.tags.TagDefineSprite;
+import format.swf.tags.TagDefineText;
 import format.swf.tags.TagPlaceObject;
 import format.swf.timeline.FrameObject;
 
@@ -62,19 +67,6 @@ class MovieClip extends format.display.MovieClip {
 	}
 	
 	
-	private function createShape (symbol:TagDefineShape):Shape {
-		
-		var handler = new AS3GraphicsDataShapeExporter (data);
-		symbol.export (handler);
-		
-		var shape = new Shape ();
-		shape.graphics.drawGraphicsData (handler.graphicsData);
-		
-		return shape;
-		
-	}
-	
-	
 	/*private function createBitmap (xfl:XFL, instance:DOMBitmapInstance):Bitmap {
 		
 		var bitmap = null;
@@ -101,54 +93,55 @@ class MovieClip extends format.display.MovieClip {
 		
 		return bitmap;
 		
-	}
+	}*/
 	
 	
-	private function createDynamicText (instance:DOMDynamicText):TextField {
+	private function createDynamicText (symbol:TagDefineEditText):TextField {
 		
 		var textField = new TextField ();
-		
-		textField.width = instance.width;
-		textField.height = instance.height;
-		textField.name = instance.name;
-		textField.selectable = instance.isSelectable;
-		
-		if (instance.matrix != null) {
-			
-			textField.transform.matrix = instance.matrix;
-			
-		}
+		textField.selectable = !symbol.noSelect;
 		
 		return textField;
 		
 	}
 	
 	
-	private function createStaticText (instance:DOMStaticText):TextField {
+	private function createShape (symbol:TagDefineShape):Shape {
+		
+		var handler = new AS3GraphicsDataShapeExporter (data);
+		symbol.export (handler);
+		
+		var shape = new Shape ();
+		shape.graphics.drawGraphicsData (handler.graphicsData);
+		
+		return shape;
+		
+	}
+	
+	
+	private function createStaticText (symbol:TagDefineText):TextField {
 		
 		var textField = new TextField ();
-		
-		textField.width = instance.width;
-		textField.height = instance.height;
-		textField.selectable = instance.isSelectable;
-		
-		if (instance.matrix != null) {
-			
-			textField.transform.matrix = instance.matrix;
-			
-		}
-		
-		textField.x += instance.left;
+		textField.selectable = false;
+		//textField.x += instance.left;
 		
 		// xfl does not embed the font
 		//textField.embedFonts = true;
 		
 		var format = new TextFormat ();
 		
-		for (textRun in instance.textRuns) {
+		/*
+		for (record in symbol.records) {
 			
 			var pos = textField.text.length;
-			textField.appendText (textRun.characters);
+			
+			for (entry in record.glyphEntries) {
+				
+				entry.
+				
+			}
+			
+			textField.appendText (record.);
 			
 			if (textRun.textAttrs.face != null) format.font = textRun.textAttrs.face;
 			if (textRun.textAttrs.alignment != null) format.align = Reflect.field (TextFormatAlign, textRun.textAttrs.alignment.toUpperCase ());
@@ -170,11 +163,11 @@ class MovieClip extends format.display.MovieClip {
 			
 			textField.setTextFormat (format, pos, textField.text.length);
 			
-		}
+		}*/
 		
 		return textField;
 		
-	}*/
+	}
 	
 	
 	/*private function createSprite (symbol:SWFTimelineContainer, object:FrameObject):MovieClip {
@@ -320,6 +313,58 @@ class MovieClip extends format.display.MovieClip {
 	}
 	
 	
+	private function placeObject (displayObject:DisplayObject, frameObject:FrameObject):Void {
+		
+		var firstTag:TagPlaceObject = cast data.tags [frameObject.placedAtIndex];
+		var lastTag:TagPlaceObject = null;
+		
+		if (frameObject.lastModifiedAtIndex > 0) {
+			
+			lastTag = cast data.tags [frameObject.lastModifiedAtIndex];
+			
+		}
+		
+		if (lastTag != null && lastTag.hasName) {
+			
+			displayObject.name = lastTag.instanceName;
+			
+		} else if (firstTag.hasName) {
+			
+			displayObject.name = firstTag.instanceName;
+			
+		}
+		
+		if (lastTag != null && lastTag.hasMatrix) {
+			
+			var matrix = lastTag.matrix.matrix;
+			matrix.tx *= 1 / 20;
+			matrix.ty *= 1 / 20;
+			
+			displayObject.transform.matrix = matrix;
+			
+		} else if (firstTag.hasMatrix) {
+			
+			var matrix = firstTag.matrix.matrix;
+			matrix.tx *= 1 / 20;
+			matrix.ty *= 1 / 20;
+			
+			displayObject.transform.matrix = matrix;
+			
+		}
+		
+		if (lastTag != null && lastTag.hasColorTransform) {
+			
+			displayObject.transform.colorTransform = lastTag.colorTransform.colorTransform;
+			
+		} else if (firstTag.hasColorTransform) {
+			
+			displayObject.transform.colorTransform = firstTag.colorTransform.colorTransform;
+			
+		}
+		
+	}
+	
+	
 	public override function play ():Void {
 		
 		if (!playing && totalFrames > 1) {
@@ -375,16 +420,19 @@ class MovieClip extends format.display.MovieClip {
 				
 				displayObject = createShape (cast symbol);
 				
+			} else if (Std.is (symbol, TagDefineText)) {
+				
+				displayObject = createStaticText (cast symbol);
+				
+			} else if (Std.is (symbol, TagDefineEditText)) {
+				
+				displayObject = createDynamicText (cast symbol);
+				
 			}
 			
 			if (displayObject != null) {
 				
-				if (object.matrix != null) {
-					
-					displayObject.transform.matrix = object.matrix;
-					
-				}
-				
+				placeObject (displayObject, object);
 				addChild (displayObject);
 				
 			}

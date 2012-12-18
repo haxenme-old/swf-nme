@@ -74,25 +74,8 @@ class Frame
 			}
 		} else {
 			// No character defined at specified depth. Create one.
-			frameObject = new FrameObject(tag.depth, tag.characterId, tag.className, tagIndex, 0, true);
+			objects.set (tag.depth, new FrameObject(tag.depth, tag.characterId, tag.className, tagIndex, 0, true));
 		}
-		
-		if (tag.hasName) {
-			
-			frameObject.name = tag.name;
-			
-		}
-		
-		if (tag.hasMatrix) {
-			
-			var matrix = tag.matrix.matrix;
-			matrix.tx *= 1 / 20;
-			matrix.ty *= 1 / 20;
-			frameObject.matrix = matrix;
-			
-		}
-		
-		objects.set (tag.depth, frameObject);
 		_objectsSortedByDepth = null;
 	}
 	
@@ -118,7 +101,8 @@ class Frame
 			str += "\n" + StringUtils.repeat(indent + 2) + "Defined CharacterIDs: " + characters.join(", ");
 		}
 		for(depth in objects.keys()) {
-			str += objects.get (depth).toString(indent);
+			//str += objects.get (depth).toString(indent);
+			str += objects.get (depth).toString();
 		}
 		return str;
 	}
