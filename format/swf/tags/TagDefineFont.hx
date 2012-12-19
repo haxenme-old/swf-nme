@@ -4,7 +4,7 @@ import format.swf.SWFData;
 import format.swf.data.SWFShape;
 import format.swf.exporters.core.IShapeExporter;
 import format.swf.utils.StringUtils;
-import nme.errors.Error;
+import flash.errors.Error;
 	
 class TagDefineFont implements IDefinitionTag
 {

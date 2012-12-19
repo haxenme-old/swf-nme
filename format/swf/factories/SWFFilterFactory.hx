@@ -12,7 +12,7 @@ import format.swf.data.filters.FilterGradientGlow;
 import format.swf.data.filters.FilterConvolution;
 import format.swf.data.filters.FilterColorMatrix;
 #end
-import nme.errors.Error;
+import flash.errors.Error;
 
 class SWFFilterFactory
 {

@@ -9,6 +9,7 @@ import flash.text.TextFormat;
 import flash.events.Event;
 import flash.Lib;
 import format.swf.exporters.AS3GraphicsDataShapeExporter;
+import format.swf.exporters.ShapeCommandExporter;
 import format.swf.tags.TagDefineBits;
 import format.swf.tags.TagDefineBitsLossless;
 import format.swf.tags.TagDefineEditText;
@@ -108,11 +109,48 @@ class MovieClip extends format.display.MovieClip {
 	
 	private function createShape (symbol:TagDefineShape):Shape {
 		
-		var handler = new AS3GraphicsDataShapeExporter (data);
+		//var handler = new AS3GraphicsDataShapeExporter (data);
+		//symbol.export (handler);
+		//
+		//var shape = new Shape ();
+		//shape.graphics.drawGraphicsData (handler.graphicsData);
+		
+		var handler = new ShapeCommandExporter (data);
 		symbol.export (handler);
 		
 		var shape = new Shape ();
-		shape.graphics.drawGraphicsData (handler.graphicsData);
+		
+		for (command in handler.commands) {
+			
+			switch (command.type) {
+				
+				case BEGIN_FILL: shape.graphics.beginFill (command.params[0], command.params[1]);
+				case BEGIN_BITMAP_FILL: 
+					
+					var bitmap = new Bitmap (cast data.getCharacter (command.params[0]));
+					shape.graphics.beginBitmapFill (bitmap.bitmapData, command.params[1], command.params[2], command.params[3]);
+					
+				case END_FILL: shape.graphics.endFill ();
+				case LINE_STYLE: 
+					
+					if (command.params.length > 0) {
+						
+						shape.graphics.lineStyle (command.params[0], command.params[1], command.params[2], command.params[3], command.params[4], command.params[5], command.params[6], command.params[7]);
+						
+					} else {
+						
+						shape.graphics.lineStyle ();
+						
+					}
+				
+				case MOVE_TO: shape.graphics.moveTo (command.params[0], command.params[1]);
+				case LINE_TO: shape.graphics.lineTo (command.params[0], command.params[1]);
+				case CURVE_TO: shape.graphics.curveTo (command.params[0], command.params[1], command.params[2], command.params[3]);
+				default:
+				
+			}
+			
+		}
 		
 		return shape;
 		

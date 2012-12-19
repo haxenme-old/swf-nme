@@ -8,7 +8,7 @@ import format.swf.data.consts.SoundType;
 import format.swf.data.etc.MPEGFrame;
 
 import flash.utils.ByteArray;
-import nme.errors.Error;
+import flash.errors.Error;
 
 class TagDefineSound implements IDefinitionTag
 {

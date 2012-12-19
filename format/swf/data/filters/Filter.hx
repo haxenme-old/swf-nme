@@ -3,7 +3,7 @@
 import format.swf.SWFData;
 
 import flash.filters.BitmapFilter;
-import nme.errors.Error;
+import flash.errors.Error;
 
 class Filter implements IFilter
 {

@@ -3,7 +3,7 @@
 import format.swf.SWFData;
 import format.swf.utils.ColorUtils;
 import format.swf.utils.StringUtils;
-import nme.errors.Error;
+import flash.errors.Error;
 
 class SWFFillStyle
 {

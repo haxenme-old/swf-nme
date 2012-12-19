@@ -1,6 +1,6 @@
 ﻿package format.swf.data;
 
-import nme.errors.Error;
+import flash.errors.Error;
 import format.swf.SWFData;
 import format.swf.data.consts.ActionValueType;
 import format.swf.utils.StringUtils;

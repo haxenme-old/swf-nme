@@ -6,7 +6,7 @@ class TextSymbol extends SWFSymbol {
 	
 	public function new () {
 		
-		
+		super ();
 		
 	}
 	

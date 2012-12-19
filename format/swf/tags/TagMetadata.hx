@@ -1,7 +1,7 @@
 ﻿package format.swf.tags;
 
 import format.swf.SWFData;
-import nme.errors.Error;
+import flash.errors.Error;
 
 class TagMetadata implements ITag
 {

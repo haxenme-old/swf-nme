@@ -1,7 +1,7 @@
 ﻿package format.swf.data.actions;
 
 import format.swf.SWFData;
-import nme.errors.Error;
+import flash.errors.Error;
 
 class Action implements IAction
 {

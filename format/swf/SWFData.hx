@@ -1,8 +1,9 @@
 package format.swf;
 
 
-import nme.utils.CompressionAlgorithm;
-import nme.utils.ByteArray;
+import flash.errors.Error;
+import flash.utils.ByteArray;
+import flash.utils.CompressionAlgorithm;
 import flash.utils.Endian;
 import format.swf.data.actions.IAction;
 import format.swf.factories.SWFActionFactory;
@@ -48,12 +49,21 @@ import format.swf.data.SWFTextRecord;
 import format.swf.data.SWFZoneData;
 import format.swf.data.SWFZoneRecord;
 import format.swf.utils.BitArray;
-import nme.errors.Error;
 
 
 class SWFData extends BitArray
 {
 	public static inline var FLOAT16_EXPONENT_BASE:Float = 15;
+	#if flash
+	public static var MIN_FLOAT_VALUE:Float = untyped __global__ ["Number"].MIN_VALUE;
+	public static var MAX_FLOAT_VALUE:Float = untyped __global__ ["Number"].MAX_VALUE;
+	#elseif js
+	public static var MIN_FLOAT_VALUE:Float = untyped __js__ ("Number.MIN_VALUE");
+	public static var MAX_FLOAT_VALUE:Float = untyped __js__ ("Number.MAX_VALUE");
+	#else
+    public static inline var MIN_FLOAT_VALUE:Float = 2.2250738585072014e-308;
+    public static inline var MAX_FLOAT_VALUE:Float = 1.7976931348623158e+308;
+	#end
 	
 	public function new() {
 		

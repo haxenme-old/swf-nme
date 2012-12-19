@@ -2,10 +2,10 @@
 
 import format.swf.data.SWFRectangle;
 import format.swf.events.SWFProgressEvent;
-import nme.utils.CompressionAlgorithm;
-
 import flash.utils.ByteArray;
-import nme.errors.Error;
+import flash.utils.CompressionAlgorithm;
+import flash.errors.Error;
+
 
 class SWFRoot extends SWFTimelineContainer
 {

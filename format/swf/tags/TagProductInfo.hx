@@ -1,7 +1,6 @@
 ﻿package format.swf.tags;
 
 import format.swf.SWFData;
-import nme.Lib;
 
 class TagProductInfo implements ITag
 {
@@ -13,7 +12,7 @@ class TagProductInfo implements ITag
 	public var level(default, null):Int;
 	
 	//private static inline var UINT_MAX_CARRY:Float = uint.MAX_VALUE + 1;
-	private static inline var UINT_MAX_CARRY:Float = Lib.MAX_FLOAT_VALUE + 1;
+	private static inline var UINT_MAX_CARRY:Float = SWFData.MAX_FLOAT_VALUE + 1;
 
 	public var productId:Int;
 	public var edition:Int;

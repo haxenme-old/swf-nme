@@ -7,7 +7,7 @@ import format.swf.timeline.Frame;
 import format.swf.timeline.Layer;
 import format.swf.timeline.Scene;
 
-import nme.errors.Error;
+import flash.errors.Error;
 
 class TagDefineSprite extends SWFTimelineContainer, implements IDefinitionTag
 {

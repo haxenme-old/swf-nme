@@ -3,12 +3,16 @@ package format.swf.lite;
 
 import flash.display.Bitmap;
 import flash.display.SimpleButton;
+import format.swf.lite.symbols.SpriteSymbol;
+import format.swf.lite.symbols.SWFSymbol;
 import format.swf.lite.MovieClip;
 
 
 class SWFLite {
 	
 	
+	public var frameRate:Float;
+	public var root:SpriteSymbol;
 	public var symbols:IntHash <SWFSymbol>;
 	
 	
@@ -30,6 +34,28 @@ class SWFLite {
 	
 	
 	public function createMovieClip (className:String = ""):MovieClip {
+		
+		if (className == "") {
+			
+			return new MovieClip (this, root);
+			
+		} else {
+			
+			for (symbol in symbols) {
+				
+				if (symbol.className == className) {
+					
+					if (Std.is (symbol, SpriteSymbol)) {
+						
+						return new MovieClip (this, cast symbol);
+						
+					}
+					
+				}
+				
+			}
+			
+		}
 		
 		return null;
 		

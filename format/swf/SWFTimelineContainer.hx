@@ -35,7 +35,7 @@ import format.swf.timeline.LayerStrip;
 import format.swf.timeline.Scene;
 import format.swf.timeline.SoundStream;
 import format.swf.utils.StringUtils;
-import nme.errors.Error;
+import flash.errors.Error;
 
 import flash.display.Sprite;
 import flash.events.Event;
@@ -418,9 +418,9 @@ class SWFTimelineContainer extends SWFEventDispatcher
 			if(frameIndicesLen > 0) {
 				var curStripType:Int = LayerStrip.TYPE_EMPTY;
 				//var startFrameIndex:Int = uint.MAX_VALUE;
-				var startFrameIndex:Int = Std.int (nme.Lib.MAX_FLOAT_VALUE);
+				var startFrameIndex:Int = Std.int (SWFData.MAX_FLOAT_VALUE);
 				//var endFrameIndex:Int = uint.MAX_VALUE;
-				var endFrameIndex:Int = Std.int (nme.Lib.MAX_FLOAT_VALUE);
+				var endFrameIndex:Int = Std.int (SWFData.MAX_FLOAT_VALUE);
 				for(j in 0...frameIndicesLen) {
 					var curFrameIndex:Int = frameIndices[j];
 					var curFrameObject:FrameObject = frames[curFrameIndex].objects.get (layer.depth);

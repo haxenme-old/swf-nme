@@ -18,7 +18,7 @@ import flash.display.GradientType;
 import flash.display.LineScaleMode;
 import flash.geom.Matrix;
 import flash.geom.Point;
-import nme.errors.Error;
+import flash.errors.Error;
 
 class SWFShape
 {
@@ -354,20 +354,20 @@ class SWFShape
 	
 	private function exportFillPath(handler:IShapeExporter, groupIndex:Int):Void {
 		var path:Array<IEdge> = createPathFromEdgeMap(fillEdgeMaps[groupIndex]);
-		var pos:Point = new Point(nme.Lib.MAX_FLOAT_VALUE, nme.Lib.MAX_FLOAT_VALUE);
+		var pos:Point = new Point(SWFData.MAX_FLOAT_VALUE, SWFData.MAX_FLOAT_VALUE);
 		//var fillStyleIdx:Int = uint.MAX_VALUE;
-		var fillStyleIdx:Int = Std.int (nme.Lib.MAX_FLOAT_VALUE);
+		var fillStyleIdx:Int = Std.int (SWFData.MAX_FLOAT_VALUE);
 		if(path.length > 0) {
 			handler.beginFills();
 			for (i in 0...path.length) {
 				var e:IEdge = path[i];
 				if (fillStyleIdx != e.fillStyleIdx) {
 					//if(fillStyleIdx != uint.MAX_VALUE) {
-					if(fillStyleIdx != nme.Lib.MAX_FLOAT_VALUE) {
+					if(fillStyleIdx != SWFData.MAX_FLOAT_VALUE) {
 						handler.endFill();
 					}
 					fillStyleIdx = e.fillStyleIdx;
-					pos = new Point(nme.Lib.MAX_FLOAT_VALUE, nme.Lib.MAX_FLOAT_VALUE);
+					pos = new Point(SWFData.MAX_FLOAT_VALUE, SWFData.MAX_FLOAT_VALUE);
 					try {
 						var matrix:Matrix;
 						var fillStyle:SWFFillStyle = fillStyles[fillStyleIdx - 1];
@@ -427,7 +427,7 @@ class SWFShape
 				pos = e.to;
 			}
 			//if(fillStyleIdx != uint.MAX_VALUE) {
-			if(fillStyleIdx != nme.Lib.MAX_FLOAT_VALUE) {
+			if(fillStyleIdx != SWFData.MAX_FLOAT_VALUE) {
 				handler.endFill();
 			}
 			handler.endFills();
@@ -436,9 +436,9 @@ class SWFShape
 	
 	private function exportLinePath(handler:IShapeExporter, groupIndex:Int):Void {
 		var path:Array<IEdge> = createPathFromEdgeMap(lineEdgeMaps[groupIndex]);
-		var pos:Point = new Point(nme.Lib.MAX_FLOAT_VALUE, nme.Lib.MAX_FLOAT_VALUE);
+		var pos:Point = new Point(SWFData.MAX_FLOAT_VALUE, SWFData.MAX_FLOAT_VALUE);
 		//var lineStyleIdx:Int = uint.MAX_VALUE;
-		var lineStyleIdx:Int = Std.int (nme.Lib.MAX_FLOAT_VALUE);
+		var lineStyleIdx:Int = Std.int (SWFData.MAX_FLOAT_VALUE);
 		var lineStyle:SWFLineStyle;
 		if(path.length > 0) {
 			handler.beginLines();
@@ -446,7 +446,7 @@ class SWFShape
 				var e:IEdge = path[i];
 				if (lineStyleIdx != e.lineStyleIdx) {
 					lineStyleIdx = e.lineStyleIdx;
-					pos = new Point(nme.Lib.MAX_FLOAT_VALUE, nme.Lib.MAX_FLOAT_VALUE);
+					pos = new Point(SWFData.MAX_FLOAT_VALUE, SWFData.MAX_FLOAT_VALUE);
 					try {
 						lineStyle = lineStyles[lineStyleIdx - 1];
 					} catch (e:Error) {

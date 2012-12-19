@@ -3,7 +3,7 @@
 import format.swf.SWFData;
 import format.swf.utils.ColorUtils;
 import format.swf.utils.MatrixUtils;
-import nme.errors.Error;
+import flash.errors.Error;
 
 class SWFMorphFillStyle
 {

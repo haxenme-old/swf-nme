@@ -15,6 +15,7 @@ import format.swf.tags.TagSymbolClass;
 class SWF {
 	
 	
+	public var data:SWFRoot;
 	public static var instances:Hash <SWF> = new Hash <SWF> ();
 	
 	public var backgroundColor (default, null):Int;
@@ -23,22 +24,20 @@ class SWF {
 	public var symbols:Hash <Int>;
 	public var width (default, null):Int;
 	
-	private var root:SWFRoot;
 	
-	
-	public function new (data:ByteArray) {
+	public function new (bytes:ByteArray) {
 		
 		//SWFTimelineContainer.AUTOBUILD_LAYERS = true;
-		root = new SWFRoot (data);
+		data = new SWFRoot (bytes);
 		
-		backgroundColor = root.backgroundColor;
-		frameRate = root.frameRate;
-		width = Std.int (root.frameSize.rect.width);
-		height = Std.int (root.frameSize.rect.height);
+		backgroundColor = data.backgroundColor;
+		frameRate = data.frameRate;
+		width = Std.int (data.frameSize.rect.width);
+		height = Std.int (data.frameSize.rect.height);
 		
 		symbols = new Hash <Int> ();
 		
-		for (tag in root.tags) {
+		for (tag in data.tags) {
 			
 			if (Std.is (tag, TagSymbolClass)) {
 				
@@ -84,13 +83,13 @@ class SWF {
 		
 		if (className == "") {
 			
-			symbol = root;
+			symbol = data;
 			
 		} else {
 			
 			if (symbols.exists (className)) {
 				
-				symbol = root.getCharacter (symbols.get (className));
+				symbol = data.getCharacter (symbols.get (className));
 				
 			}
 			
