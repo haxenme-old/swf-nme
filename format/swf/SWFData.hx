@@ -303,7 +303,13 @@ class SWFData extends BitArray
 		var index:Int = position;
 		while (this[index++] > 0) {}
 		resetBitsPending();
+		#if neko
+		var result = readUTFBytes(index - position - 1);
+		position++;
+		return result;
+		#else
 		return readUTFBytes(index - position);
+		#end
 	}
 	
 	public function writeSTRING(value:String):Void {

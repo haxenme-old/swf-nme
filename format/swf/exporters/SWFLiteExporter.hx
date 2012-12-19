@@ -75,8 +75,6 @@ class SWFLiteExporter {
 		
 		var bitmap = new Bitmap (tag);
 		
-		Sys.println ("sldkfj");
-		
 		if (bitmap.bitmapData != null) {
 			
 			var symbol = new BitmapSymbol ();
@@ -84,7 +82,6 @@ class SWFLiteExporter {
 			symbol.id = tag.characterId;
 			
 			bitmaps.set (symbol.id, bitmap.bitmapData);
-			Sys.println (symbol.id);
 			
 			symbol.path = "";
 			swfLite.symbols.set (symbol.id, symbol);
