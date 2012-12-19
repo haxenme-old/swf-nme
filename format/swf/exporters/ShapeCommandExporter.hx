@@ -99,4 +99,6 @@ class ShapeCommandExporter extends DefaultShapeExporter {
 		commands.push ( { type: CommandType.CURVE_TO, params: [ controlX, controlY, anchorX, anchorY ] } );
 		
 	}
+	
+	
 }

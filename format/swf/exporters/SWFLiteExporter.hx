@@ -1,6 +1,8 @@
 package format.swf.exporters;
 
 
+import flash.display.BitmapData;
+import format.swf.exporters.core.ShapeCommand;
 import format.swf.instance.Bitmap;
 import format.swf.lite.SWFLite;
 import format.swf.lite.symbols.BitmapSymbol;
@@ -28,6 +30,7 @@ import format.swf.SWFRoot;
 class SWFLiteExporter {
 	
 	
+	public var bitmaps:IntHash <BitmapData>;
 	public var swfLite:SWFLite;
 	
 	private var data:SWFRoot;
@@ -36,6 +39,8 @@ class SWFLiteExporter {
 	public function new (data:SWFRoot) {
 		
 		this.data = data;
+		
+		bitmaps = new IntHash <BitmapData> ();
 		
 		swfLite = new SWFLite ();
 		swfLite.frameRate = data.frameRate;
@@ -70,13 +75,16 @@ class SWFLiteExporter {
 		
 		var bitmap = new Bitmap (tag);
 		
+		Sys.println ("sldkfj");
+		
 		if (bitmap.bitmapData != null) {
 			
 			var symbol = new BitmapSymbol ();
 			symbol.className = tag.name;
 			symbol.id = tag.characterId;
 			
-			// Have to write out the bitmap somewhere?
+			bitmaps.set (symbol.id, bitmap.bitmapData);
+			Sys.println (symbol.id);
 			
 			symbol.path = "";
 			swfLite.symbols.set (symbol.id, symbol);
@@ -100,6 +108,17 @@ class SWFLiteExporter {
 		tag.export (handler);
 		
 		symbol.commands = handler.commands;
+		
+		for (command in handler.commands) {
+			
+			if (command.type == CommandType.BEGIN_BITMAP_FILL) {
+				
+				processTag (cast data.getCharacter (command.params[0]));
+				
+			}
+			
+		}
+		
 		swfLite.symbols.set (symbol.id, symbol);
 		
 		return symbol;

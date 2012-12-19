@@ -5,11 +5,15 @@ import flash.display.DisplayObject;
 import flash.display.Shape;
 import flash.events.Event;
 import flash.Lib;
-//import format.swf.instance.Bitmap;
-import format.swf.lite.SWFLite;
+import format.swf.lite.symbols.BitmapSymbol;
 import format.swf.lite.symbols.ShapeSymbol;
 import format.swf.lite.symbols.SpriteSymbol;
 import format.swf.lite.timeline.FrameObject;
+import format.swf.lite.SWFLite;
+
+#if nme
+import nme.Assets;
+#end
 
 
 class MovieClip extends format.display.MovieClip {
@@ -18,11 +22,10 @@ class MovieClip extends format.display.MovieClip {
 	private static var clips:Array <MovieClip>;
 	private static var initialized:Bool;
 	
-	private var swf:SWFLite;
-	private var symbol:SpriteSymbol;
 	private var lastUpdate:Int;
 	private var playing:Bool;
-	
+	private var swf:SWFLite;
+	private var symbol:SpriteSymbol;
 	
 	
 	public function new (swf:SWFLite, symbol:SpriteSymbol) {
@@ -109,11 +112,21 @@ class MovieClip extends format.display.MovieClip {
 			switch (command.type) {
 				
 				case BEGIN_FILL: shape.graphics.beginFill (command.params[0], command.params[1]);
-				//case BEGIN_BITMAP_FILL: 
-					//
-					//var bitmap = new Bitmap (cast swf.symbols.get (command.params[0]));
-					//shape.graphics.beginBitmapFill (bitmap.bitmapData, command.params[1], command.params[2], command.params[3]);
-					//
+				case BEGIN_BITMAP_FILL: 
+					
+					#if nme
+					
+					var bitmap:BitmapSymbol = cast swf.symbols.get (command.params[0]);
+					
+					if (bitmap != null && bitmap.path != "") {
+						
+						var bitmapData = Assets.getBitmapData (bitmap.path);
+						shape.graphics.beginBitmapFill (bitmapData, command.params[1], command.params[2], command.params[3]);
+						
+					}
+					
+					#end
+					
 				case END_FILL: shape.graphics.endFill ();
 				case LINE_STYLE: 
 					

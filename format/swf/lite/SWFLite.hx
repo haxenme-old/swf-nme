@@ -1,7 +1,7 @@
 package format.swf.lite;
 
 
-import flash.display.Bitmap;
+import flash.display.BitmapData;
 import flash.display.SimpleButton;
 import format.swf.lite.symbols.SpriteSymbol;
 import format.swf.lite.symbols.SWFSymbol;
@@ -62,7 +62,7 @@ class SWFLite {
 	}
 	
 	
-	public function getBitmap (className:String):Bitmap {
+	public function getBitmapData (className:String):BitmapData {
 		
 		return null;
 		
