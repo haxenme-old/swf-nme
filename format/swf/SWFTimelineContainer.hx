@@ -187,7 +187,12 @@ class SWFTimelineContainer extends SWFEventDispatcher
 		// Build dictionary and display list etc
 		processTag(tag);
 		// Adjust position (just in case the parser under- or overflows)
-		if(data.position != pos + tagHeader.tagLength) {
+		#if flash
+		var position:UInt = pos + tagHeader.tagLength;
+		#else
+		var position = pos + tagHeader.tagLength;
+		#end
+		if(data.position != position) {
 			trace("WARNING: excess bytes: " + 
 				(data.position - (pos + tagHeader.tagLength)) + ", " +
 				"Tag: " + tag.name + ", " +
