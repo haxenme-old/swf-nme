@@ -151,8 +151,7 @@ class Bitmap {
 			if (!lossless && alpha != null) {
 				
 				// NME doesn't currently handle alpha data for JPEG images, so we need to add it ourselves
-				
-				bitmapData = createWithAlpha (bitmapData, alpha);
+				//bitmapData = createWithAlpha (bitmapData, alpha);
 				
 			}
 			
