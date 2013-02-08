@@ -13,13 +13,19 @@ import format.display.FrameLabel;
 import format.swf.data.Frame;
 import format.SWF;
 
+#if haxe3
+import haxe.ds.IntMap;
+#else
+typedef IntMap<T> = IntHash<T>;
+#end
+
 
 class MovieClip extends format.display.MovieClip {
 	
 	
 	private var activeObjects:Array <ActiveObject>;
 	private var frames:Array <Frame>;
-	private var objectPool:IntHash <List <DisplayObject>>;
+	private var objectPool:IntMap <List <DisplayObject>>;
 	private var playing:Bool;
 	private var swf:SWF;
 	
@@ -28,7 +34,7 @@ class MovieClip extends format.display.MovieClip {
 		
 		super ();
 		
-		objectPool = new IntHash <List <DisplayObject>> ();
+		objectPool = new IntMap <List <DisplayObject>> ();
 		
 		enabled = true;
 		playing = false;
@@ -304,7 +310,7 @@ class MovieClip extends format.display.MovieClip {
 						
 						switch (slot.symbol) {
 							
-							case spriteSymbol (data):
+							case spriteSymbol (_):
 								
 								var clip:MovieClip = cast displayObject;
 								clip.gotoAndPlay (1);
@@ -356,11 +362,11 @@ class MovieClip extends format.display.MovieClip {
 								text.apply (t);
 								displayObject = t;
 							
-							case bitmapSymbol (shape):
+							case bitmapSymbol (_):
 								
 								throw("Adding bitmap?");
 							
-							case fontSymbol (font):
+							case fontSymbol (_):
 								
 								throw("Adding font?");
 							

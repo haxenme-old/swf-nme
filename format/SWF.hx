@@ -20,22 +20,30 @@ import format.swf.symbol.StaticText;
 import format.swf.symbol.Symbol;
 import format.swf.MovieClip;
 
+#if haxe3
+import haxe.ds.IntMap;
+import haxe.ds.StringMap;
+#else
+typedef IntMap<T> = IntHash<T>;
+typedef StringMap<T> = Hash<T>;
+#end
+
 
 class SWF {
 	
 	
-	public static var instances:Hash <SWF> = new Hash <SWF> ();
+	public static var instances:StringMap <SWF> = new StringMap <SWF> ();
 	
 	public var backgroundColor (default, null):Int;
 	public var frameRate (default, null):Float;
 	public var height (default, null):Int;
-	public var symbols:Hash <Int>;
+	public var symbols:StringMap <Int>;
 	public var width (default, null):Int;
 	
 	private var jpegTables:ByteArray;
-	private var symbolData:IntHash <Symbol>;
+	private var symbolData:IntMap <Symbol>;
 	private var stream:SWFStream;
-	private var streamPositions:IntHash <Int>;
+	private var streamPositions:IntMap <Int>;
 	private var version:Int;
 	
 	
@@ -43,9 +51,9 @@ class SWF {
 		
 		stream = new SWFStream (data);
 		
-		symbolData = new IntHash <Symbol> ();
-		streamPositions = new IntHash <Int> ();
-		symbols = new Hash <Int> ();
+		symbolData = new IntMap <Symbol> ();
+		streamPositions = new IntMap <Int> ();
+		symbols = new StringMap <Int> ();
 		
 		var dimensions = stream.readRect ();
 		width = Std.int (dimensions.width);

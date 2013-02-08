@@ -6,18 +6,24 @@ import flash.geom.ColorTransform;
 import flash.geom.Matrix;
 import format.swf.symbol.Symbol;
 
+#if haxe3
+import haxe.ds.IntMap;
+#else
+typedef IntMap<T> = IntHash<T>;
+#end
+
 
 class Frame {
 	
 	
 	public var frame:Int;
 	
-	private var objects:IntHash <DepthSlot>;
+	private var objects:IntMap <DepthSlot>;
 	
 	
 	public function new (previous:Frame = null) {
 		
-		objects = new IntHash <DepthSlot> ();
+		objects = new IntMap <DepthSlot> ();
 		
 		if (previous != null) {
 			
@@ -40,9 +46,9 @@ class Frame {
 	}
 	
 	
-	public function copyObjectSet ():IntHash <DepthSlot> {
+	public function copyObjectSet ():IntMap <DepthSlot> {
 		
-		var copy = new IntHash <DepthSlot> ();
+		var copy = new IntMap <DepthSlot> ();
 		
 		for (depth in objects.keys ()) {
 			

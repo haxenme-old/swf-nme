@@ -142,11 +142,11 @@ class Button {
 					text.apply (t);
 					displayObject = t;
 				
-				case bitmapSymbol (shape):
+				case bitmapSymbol (_):
 					
 					throw("Adding bitmap?");
 				
-				case fontSymbol (font):
+				case fontSymbol (_):
 					
 					throw("Adding font?");
 				

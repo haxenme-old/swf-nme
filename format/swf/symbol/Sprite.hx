@@ -11,12 +11,18 @@ import format.swf.data.SWFStream;
 import format.swf.data.Tags;
 import format.SWF;
 
+#if haxe3
+import haxe.ds.StringMap;
+#else
+typedef StringMap<T> = Hash<T>;
+#end
+
 
 class Sprite {
 	
 	
 	public var frameCount (default, null):Int;
-	public var frameLabels:Hash<Int>;
+	public var frameLabels:StringMap<Int>;
 	public var frames (default, null):Array <Frame>;
 	public var swf (default, null):SWF;
 	
@@ -35,7 +41,7 @@ class Sprite {
 		frames = [ null ]; // frame 0 is empty
 		
 		frame = new Frame ();
-		frameLabels = new Hash <Int> ();
+		frameLabels = new StringMap <Int> ();
 		name = "Sprite " + id;
 		cacheAsBitmap = false;
 		

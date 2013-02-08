@@ -4,5 +4,5 @@
     <tag v="cpp"/>
     <tag v="flash"/>
     <description>Provides support for parsing and rendering SWF content</description>
-    <version name="1.18">Remove JPEG createWithAlpha, now that NME supports it</version>
+    <version name="1.19">Haxe 3 fixes</version>
 </project>

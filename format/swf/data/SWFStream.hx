@@ -20,7 +20,7 @@ class SWFStream {
 	
 	public var bitPosition:Int;
 	public var byteBuffer:Int;
-	public var position (getPosition, setPosition):Int;
+	public var position (get_position, set_position):Int;
 	public var stream:ByteArray;
 	public var tagRead:Int;
 	public var tagSize:Int;
@@ -614,14 +614,14 @@ class SWFStream {
 	
 	
 	
-	private function getPosition ():Int {
+	private function get_position ():Int {
 		
 		return stream.position;
 		
 	}
 	
 	
-	private function setPosition (value:Int):Int {
+	private function set_position (value:Int):Int {
 		
 		return stream.position = value;
 		
