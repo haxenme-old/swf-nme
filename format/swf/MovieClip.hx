@@ -84,7 +84,7 @@ class MovieClip extends format.display.MovieClip {
 		//if (#if flash totalFrames #else mTotalFrames #end == 1) {
 			
 			var bounds = getBounds (this);
-			var bitmapData = new BitmapData (Std.int (bounds.right), Std.int (bounds.bottom), true, #if neko { a: 0, rgb: 0x000000 } #else 0x00000000 #end);
+			var bitmapData = new BitmapData (Std.int (bounds.right), Std.int (bounds.bottom), true, #if (neko && !haxe3) { a: 0, rgb: 0x000000 } #else 0x00000000 #end);
 			bitmapData.draw (this);
 			
 			for (activeObject in activeObjects) {

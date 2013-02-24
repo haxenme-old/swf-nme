@@ -7,7 +7,6 @@ import flash.geom.Rectangle;
 import flash.utils.ByteArray;
 import format.swf.data.SWFStream;
 import flash.geom.Point;
-import nme.display.BitmapInt32;
 
 #if flash
 import flash.display.Loader;
@@ -171,7 +170,7 @@ class Bitmap {
 			
 			for (x in 0...data.width) {
 				
-				#if !neko
+				#if (!neko || haxe3)
 				
 				alphaBitmap.setPixel32 (x, y, data.getPixel (x, y) + (alpha[index ++] << 24));
 				
