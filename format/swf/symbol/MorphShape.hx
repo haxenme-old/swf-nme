@@ -550,7 +550,7 @@ class MorphShape {
 				
 				result.push (function (g:Graphics, f:Float) {
 					
-					var cols = [];
+					var cols #if flash :Array<UInt> #end = [];
 					var alphas = [];
 					var ratios = [];
 					
@@ -794,7 +794,7 @@ class MorphShape {
 						
 						result.push (function (g:Graphics, f:Float) {
 							
-							var cols = [];
+							var cols #if flash :Array<UInt> #end = [];
 							var alphas = [];
 							var ratios = [];
 							
