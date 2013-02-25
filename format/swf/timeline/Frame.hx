@@ -4,6 +4,10 @@ import format.swf.tags.TagPlaceObject;
 import format.swf.tags.TagRemoveObject;
 import format.swf.utils.StringUtils;
 
+#if !haxe3
+typedef Map<Int, T> = IntHash<T>;
+#end
+
 class Frame
 {
 	public var frameNumber:Int = 0;
@@ -11,7 +15,7 @@ class Frame
 	public var tagIndexEnd:Int = 0;
 	public var label:String;
 	
-	public var objects(default, null):IntHash<FrameObject>;
+	public var objects(default, null):Map<Int, FrameObject>;
 	private var _objectsSortedByDepth:Array<FrameObject>;
 	public var characters(default, null):Array<Int>;
 	public var tagCount (get_tagCount, null):Int;
@@ -20,7 +24,7 @@ class Frame
 	{
 		this.frameNumber = frameNumber;
 		this.tagIndexStart = tagIndexStart;
-		objects = new IntHash<FrameObject>();
+		objects = new Map<Int, FrameObject>();
 		characters = [];
 	}
 	

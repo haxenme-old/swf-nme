@@ -7,7 +7,7 @@ import format.swf.utils.StringUtils;
 import flash.filters.BitmapFilter;
 import flash.filters.ConvolutionFilter;
 
-class FilterConvolution extends Filter, implements IFilter
+class FilterConvolution extends Filter #if !haxe3 , #end implements IFilter
 {
 	public var matrixX:Int;
 	public var matrixY:Int;

@@ -11,17 +11,21 @@ import format.swf.tags.TagDefineBitsLossless;
 import format.swf.tags.TagDefineSprite;
 import format.swf.tags.TagSymbolClass;
 
+#if !haxe3
+typedef Map<String, T> = Hash<T>;
+#end
+
 
 class SWF {
 	
 	
 	public var data:SWFRoot;
-	public static var instances:Hash <SWF> = new Hash <SWF> ();
+	public static var instances = new Map<String, SWF> ();
 	
 	public var backgroundColor (default, null):Int;
 	public var frameRate (default, null):Float;
 	public var height (default, null):Int;
-	public var symbols:Hash <Int>;
+	public var symbols:Map <String, Int>;
 	public var width (default, null):Int;
 	
 	
@@ -35,7 +39,7 @@ class SWF {
 		width = Std.int (data.frameSize.rect.width);
 		height = Std.int (data.frameSize.rect.height);
 		
-		symbols = new Hash <Int> ();
+		symbols = new Map <String, Int> ();
 		
 		for (tag in data.tags) {
 			

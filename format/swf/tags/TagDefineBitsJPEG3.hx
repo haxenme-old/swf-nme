@@ -5,7 +5,7 @@ import format.swf.data.consts.BitmapType;
 
 import flash.utils.ByteArray;
 
-class TagDefineBitsJPEG3 extends TagDefineBitsJPEG2, implements IDefinitionTag
+class TagDefineBitsJPEG3 extends TagDefineBitsJPEG2 #if !haxe3 , #end implements IDefinitionTag
 {
 	public static inline var TYPE:Int = 35;
 	

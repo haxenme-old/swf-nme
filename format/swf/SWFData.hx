@@ -50,6 +50,11 @@ import format.swf.data.SWFZoneData;
 import format.swf.data.SWFZoneRecord;
 import format.swf.utils.BitArray;
 
+#if haxe3
+typedef Hash<T> = Map<String, T>;
+typedef IntHash<T> = Map<Int, T>;
+#end
+
 
 class SWFData extends BitArray
 {

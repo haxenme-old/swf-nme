@@ -2,7 +2,7 @@
 
 import format.swf.SWFData;
 
-class ActionUnknown extends Action, implements IAction
+class ActionUnknown extends Action #if !haxe3 , #end implements IAction
 {
 	public function new(code:Int, length:Int) {
 		super(code, length);

@@ -43,6 +43,10 @@ import flash.utils.ByteArray;
 import flash.utils.Endian;
 //import flash.utils.getTimer;
 
+#if !haxe3
+typedef Hash<Int, T> = IntHash<T>;
+#end
+
 class SWFTimelineContainer extends SWFEventDispatcher
 {
 	// We're just being lazy here.
@@ -52,14 +56,14 @@ class SWFTimelineContainer extends SWFEventDispatcher
 	
 	public var tags(default, null):Array<ITag>;
 	public var tagsRaw(default, null):Array<SWFRawTag>;
-	public var dictionary(default, null):IntHash<Int>;
+	public var dictionary(default, null):Map<Int, Int>;
 	public var scenes(default, null):Array<Scene>;
 	public var frames(default, null):Array<Frame>;
 	public var layers(default, null):Array<Layer>;
 	public var soundStream(default, null):SoundStream;
 
 	private var currentFrame:Frame;
-	private var frameLabels:IntHash<String>;
+	private var frameLabels:Map<Int, String>;
 	private var hasSoundStream:Bool;
 
 	private var enterFrameProvider:Sprite;
@@ -83,7 +87,7 @@ class SWFTimelineContainer extends SWFEventDispatcher
 		backgroundColor = 0xffffff;
 		tags = new Array<ITag>();
 		tagsRaw = new Array<SWFRawTag>();
-		dictionary = new IntHash<Int>();
+		dictionary = new Map<Int, Int>();
 		scenes = new Array<Scene>();
 		frames = new Array<Frame>();
 		layers = new Array<Layer>();
@@ -144,9 +148,9 @@ class SWFTimelineContainer extends SWFEventDispatcher
 		tags = new Array<ITag>();
 		frames = new Array<Frame>();
 		layers = new Array<Layer>();
-		dictionary = new IntHash<Int>();
+		dictionary = new Map<Int, Int>();
 		currentFrame = new Frame();
-		frameLabels = new IntHash<String>();
+		frameLabels = new Map<Int, String>();
 		hasSoundStream = false;
 		_tmpData = data;
 		_tmpVersion = version;
@@ -185,6 +189,8 @@ class SWFTimelineContainer extends SWFEventDispatcher
 		tags.push(tag);
 		tagsRaw.push(tagRaw);
 		// Build dictionary and display list etc
+		trace (tag);
+		trace ("hello");
 		processTag(tag);
 		// Adjust position (just in case the parser under- or overflows)
 		#if flash
@@ -394,7 +400,7 @@ class SWFTimelineContainer extends SWFEventDispatcher
 		var i:Int;
 		var depth:String;
 		var depthInt:Int;
-		var depths:IntHash <Array <Int>> = new IntHash <Array <Int>>();
+		var depths = new Map <Int, Array <Int>>();
 		var depthsAvailable:Array<Int> = [];
 		
 		for(i in 0...frames.length) {

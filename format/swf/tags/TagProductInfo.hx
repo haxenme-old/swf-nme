@@ -12,7 +12,7 @@ class TagProductInfo implements ITag
 	public var level(default, null):Int;
 	
 	//private static inline var UINT_MAX_CARRY:Float = uint.MAX_VALUE + 1;
-	private static inline var UINT_MAX_CARRY:Float = SWFData.MAX_FLOAT_VALUE + 1;
+	private static inline function UINT_MAX_CARRY () { return SWFData.MAX_FLOAT_VALUE + 1; };
 
 	public var productId:Int;
 	public var edition:Int;
@@ -37,10 +37,10 @@ class TagProductInfo implements ITag
 		minorVersion = data.readUI8();
 
 		build = data.readUI32()
-				+ data.readUI32() * UINT_MAX_CARRY;
+				+ data.readUI32() * UINT_MAX_CARRY();
 
 		var sec:Float = data.readUI32()
-				+ data.readUI32() * UINT_MAX_CARRY;
+				+ data.readUI32() * UINT_MAX_CARRY();
 
 		compileDate = Date.fromTime(sec);
 	}
@@ -52,9 +52,9 @@ class TagProductInfo implements ITag
 		body.writeUI8(majorVersion);
 		body.writeUI8(minorVersion);
 		body.writeUI32(Std.int (build));
-		body.writeUI32(Std.int (build / UINT_MAX_CARRY));
+		body.writeUI32(Std.int (build / UINT_MAX_CARRY()));
 		body.writeUI32(Std.int (compileDate.getTime ()));
-		body.writeUI32(Std.int (compileDate.getTime () / UINT_MAX_CARRY));
+		body.writeUI32(Std.int (compileDate.getTime () / UINT_MAX_CARRY()));
 		data.writeTagHeader(type, body.length);
 		data.writeBytes(body);
 	}

@@ -6,7 +6,7 @@ import flash.filters.BitmapFilter;
 import flash.filters.BitmapFilterType;
 import flash.filters.GradientBevelFilter;
 
-class FilterGradientBevel extends FilterGradientGlow, implements IFilter
+class FilterGradientBevel extends FilterGradientGlow #if !haxe3 , #end implements IFilter
 {
 	public function new (id:Int) {
 		super(id);

@@ -6,7 +6,7 @@ import format.swf.utils.ColorUtils;
 import flash.filters.BitmapFilter;
 import flash.filters.DropShadowFilter;
 
-class FilterDropShadow extends Filter, implements IFilter
+class FilterDropShadow extends Filter #if !haxe3 , #end implements IFilter
 {
 	public var dropShadowColor:Int;
 	public var blurX:Float;

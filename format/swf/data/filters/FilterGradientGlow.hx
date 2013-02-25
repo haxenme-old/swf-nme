@@ -8,7 +8,7 @@ import flash.filters.BitmapFilter;
 import flash.filters.BitmapFilterType;
 import flash.filters.GradientGlowFilter;
 
-class FilterGradientGlow extends Filter, implements IFilter
+class FilterGradientGlow extends Filter #if !haxe3 , #end implements IFilter
 {
 	public var numColors:Int;
 	public var blurX:Float;
