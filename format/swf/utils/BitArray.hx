@@ -36,6 +36,33 @@ class BitArray extends ByteArray
 		value &= (0xffffffff >>> (32 - bits));
 		var bitsConsumed:Int;
 		if (bitsPending > 0) {
+			#if cpp
+			if (bitsPending > bits) {
+				position --;
+				var setValue = readInt();
+				setValue |= value << (bitsPending - bits);
+				position --;
+				writeInt (setValue);
+				bitsConsumed = bits;
+				bitsPending -= bits;
+			} else if (bitsPending == bits) {
+				position --;
+				var setValue = readInt();
+				setValue |= value;
+				position --;
+				writeInt(setValue);
+				bitsConsumed = bits;
+				bitsPending = 0;
+			} else {
+				position --;
+				var setValue = readInt();
+				setValue |= value >> (bits - bitsPending);
+				position --;
+				writeInt (setValue);
+				bitsConsumed = bitsPending;
+				bitsPending = 0;
+			}
+			#else
 			if (bitsPending > bits) {
 				this[position - 1] |= value << (bitsPending - bits);
 				bitsConsumed = bits;
@@ -49,6 +76,7 @@ class BitArray extends ByteArray
 				bitsConsumed = bitsPending;
 				bitsPending = 0;
 			}
+			#end
 		} else {
 			bitsConsumed = Std.int (Math.min(8, bits));
 			bitsPending = 8 - bitsConsumed;
