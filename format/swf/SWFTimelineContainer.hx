@@ -189,8 +189,8 @@ class SWFTimelineContainer extends SWFEventDispatcher
 		tags.push(tag);
 		tagsRaw.push(tagRaw);
 		// Build dictionary and display list etc
-		trace (tag);
-		trace ("hello");
+		//trace (tag);
+		//trace ("hello");
 		processTag(tag);
 		// Adjust position (just in case the parser under- or overflows)
 		#if flash
@@ -277,6 +277,7 @@ class SWFTimelineContainer extends SWFEventDispatcher
 	}
 
 	private function processTag(tag:ITag):Void {
+		//return;
 		var currentTagIndex:Int = tags.length - 1;
 		if(Std.is (tag, IDefinitionTag)) {
 			processDefinitionTag(cast tag, currentTagIndex);

@@ -22,7 +22,13 @@ class Bitmap extends flash.display.Bitmap {
 			
 			var transparent = (data.level > 1);
 			var buffer = data.zlibBitmapData;
-			buffer.uncompress ();
+			
+			try {
+				
+				buffer.uncompress ();
+				
+			} catch (e:Dynamic) { }
+			
 			buffer.position = 0;
 			
 			if (data.bitmapFormat == BitmapFormat.BIT_8) {
