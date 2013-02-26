@@ -277,7 +277,6 @@ class SWFTimelineContainer extends SWFEventDispatcher
 	}
 
 	private function processTag(tag:ITag):Void {
-		//return;
 		var currentTagIndex:Int = tags.length - 1;
 		if(Std.is (tag, IDefinitionTag)) {
 			processDefinitionTag(cast tag, currentTagIndex);
@@ -286,7 +285,7 @@ class SWFTimelineContainer extends SWFEventDispatcher
 			processDisplayListTag(cast tag, currentTagIndex);
 			return;
 		}
-		switch(tag.type) {
+		switch(cast (tag.type, Int)) {
 			// Frame labels and scenes
 			case TagFrameLabel.TYPE, TagDefineSceneAndFrameLabelData.TYPE:
 				processFrameLabelTag(tag, currentTagIndex);
@@ -316,7 +315,7 @@ class SWFTimelineContainer extends SWFEventDispatcher
 	}
 
 	private function processDisplayListTag(tag:IDisplayListTag, currentTagIndex:Int):Void {
-		switch(tag.type) {
+		switch(cast (tag.type, Int)) {
 			case TagShowFrame.TYPE:
 				currentFrame.tagIndexEnd = currentTagIndex;
 				if(currentFrame.label == null && frameLabels.exists (currentFrame.frameNumber)) {
@@ -334,7 +333,7 @@ class SWFTimelineContainer extends SWFEventDispatcher
 	}
 
 	private function processFrameLabelTag(tag:ITag, currentTagIndex:Int):Void {
-		switch(tag.type) {
+		switch(cast (tag.type, Int)) {
 			case TagDefineSceneAndFrameLabelData.TYPE:
 				var tagSceneAndFrameLabelData:TagDefineSceneAndFrameLabelData = cast tag;
 				var i:Int;
@@ -353,7 +352,7 @@ class SWFTimelineContainer extends SWFEventDispatcher
 	}
 	
 	private function processSoundStreamTag(tag:ITag, currentTagIndex:Int):Void {
-		switch(tag.type) {
+		switch(cast (tag.type, Int)) {
 			case TagSoundStreamHead.TYPE, TagSoundStreamHead2.TYPE:
 				var tagSoundStreamHead:TagSoundStreamHead = cast tag;
 				soundStream = new SoundStream();
