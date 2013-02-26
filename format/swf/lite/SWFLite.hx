@@ -13,12 +13,12 @@ class SWFLite {
 	
 	public var frameRate:Float;
 	public var root:SpriteSymbol;
-	public var symbols:IntHash <SWFSymbol>;
+	public var symbols:Map <Int, SWFSymbol>;
 	
 	
 	public function new () {
 		
-		symbols = new IntHash <SWFSymbol> ();
+		symbols = new Map <Int, SWFSymbol> ();
 		
 		// distinction of symbol by class name ad characters by ID somewhere?
 		

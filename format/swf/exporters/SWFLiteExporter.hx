@@ -30,7 +30,7 @@ import format.swf.SWFRoot;
 class SWFLiteExporter {
 	
 	
-	public var bitmaps:IntHash <BitmapData>;
+	public var bitmaps:Map <Int, BitmapData>;
 	public var swfLite:SWFLite;
 	
 	private var data:SWFRoot;
@@ -40,7 +40,7 @@ class SWFLiteExporter {
 		
 		this.data = data;
 		
-		bitmaps = new IntHash <BitmapData> ();
+		bitmaps = new Map <Int, BitmapData> ();
 		
 		swfLite = new SWFLite ();
 		swfLite.frameRate = data.frameRate;
