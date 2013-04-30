@@ -20,7 +20,7 @@ import format.swf.tags.TagPlaceObject;
 import format.swf.timeline.FrameObject;
 
 
-class MovieClip extends format.display.MovieClip {
+class MovieClip extends flash.display.MovieClip {
 	
 	
 	private static var clips:Array <MovieClip>;
@@ -29,6 +29,11 @@ class MovieClip extends format.display.MovieClip {
 	private var data:SWFTimelineContainer;
 	private var lastUpdate:Int;
 	private var playing:Bool;
+	
+	#if flash
+	private var mCurrentFrame:Int;
+	private var mTotalFrames:Int;
+	#end
 	
 	
 	
@@ -47,12 +52,14 @@ class MovieClip extends format.display.MovieClip {
 			
 		}
 		
-		currentFrame = 1;
-		totalFrames = data.frames.length;
+		//currentFrame = 1;
+		mCurrentFrame = 1;
+		//totalFrames = data.frames.length;
+		mTotalFrames = data.frames.length;
 		
 		update ();
 		
-		if (totalFrames > 1) {
+		if (mTotalFrames > 1) {
 			
 			play ();
 			
@@ -243,13 +250,13 @@ class MovieClip extends format.display.MovieClip {
 	
 	private function enterFrame ():Void {
 		
-		if (lastUpdate == currentFrame) {
+		if (lastUpdate == mCurrentFrame) {
 			
-			currentFrame ++;
+			mCurrentFrame ++;
 			
-			if (currentFrame > totalFrames) {
+			if (mCurrentFrame > mTotalFrames) {
 				
-				currentFrame = 1;
+				mCurrentFrame = 1;
 				
 			}
 			
@@ -318,18 +325,18 @@ class MovieClip extends format.display.MovieClip {
 	}
 	
 	
-	public override function gotoAndPlay (frame:Dynamic, scene:String = null):Void {
+	public override function gotoAndPlay (frame:#if flash flash.utils.Object #else Dynamic #end, scene:String = null):Void {
 		
-		currentFrame = getFrame (frame);
+		mCurrentFrame = getFrame (frame);
 		update ();
 		play ();
 		
 	}
 	
 	
-	public override function gotoAndStop (frame:Dynamic, scene:String = null):Void {
+	public override function gotoAndStop (frame:#if flash flash.utils.Object #else Dynamic #end, scene:String = null):Void {
 		
-		currentFrame = getFrame (frame);
+		mCurrentFrame = getFrame (frame);
 		update ();
 		stop ();
 		
@@ -338,11 +345,11 @@ class MovieClip extends format.display.MovieClip {
 	
 	public override function nextFrame ():Void {
 		
-		var next = currentFrame + 1;
+		var next = mCurrentFrame + 1;
 		
-		if (next > totalFrames) {
+		if (next > mTotalFrames) {
 			
-			next = totalFrames;
+			next = mTotalFrames;
 			
 		}
 		
@@ -405,7 +412,7 @@ class MovieClip extends format.display.MovieClip {
 	
 	public override function play ():Void {
 		
-		if (!playing && totalFrames > 1) {
+		if (!playing && mTotalFrames > 1) {
 			
 			playing = true;
 			clips.push (this);
@@ -417,7 +424,7 @@ class MovieClip extends format.display.MovieClip {
 	
 	public override function prevFrame ():Void {
 		
-		var previous = currentFrame - 1;
+		var previous = mCurrentFrame - 1;
 		
 		if (previous < 1) {
 			
@@ -649,7 +656,7 @@ class MovieClip extends format.display.MovieClip {
 	}
 	
 	
-	public override function unflatten ():Void {
+	public /*override*/ function unflatten ():Void {
 		
 		lastUpdate = -1;
 		update ();
@@ -659,7 +666,7 @@ class MovieClip extends format.display.MovieClip {
 	
 	private function update ():Void {
 		
-		if (currentFrame != lastUpdate) {
+		if (mCurrentFrame != lastUpdate) {
 			
 			for (i in 0...numChildren) {
 				
@@ -687,7 +694,7 @@ class MovieClip extends format.display.MovieClip {
 				//
 			//}
 			
-			var frameIndex = currentFrame - 1;
+			var frameIndex = mCurrentFrame - 1;
 			
 			if (frameIndex > -1) {
 				
@@ -697,9 +704,32 @@ class MovieClip extends format.display.MovieClip {
 			
 		}
 		
-		lastUpdate = currentFrame;
+		lastUpdate = mCurrentFrame;
 		
 	}
+	
+	
+	
+	
+	// Get & Set Methods
+	
+	
+	
+	
+	#if flash
+	@:getter public function get_currentFrame():Int {
+		
+		return mCurrentFrame;
+		
+	}
+	
+	
+	@:getter public function get_totalFrames():Int {
+		
+		return mTotalFrames;
+		
+	}
+	#end
 	
 	
 	
