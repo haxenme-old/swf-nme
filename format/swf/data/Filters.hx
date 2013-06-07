@@ -1,7 +1,7 @@
 package format.swf.data;
 
 
-#if !nme
+#if (!nme && !openfl)
 import flash.filters.BevelFilter;
 import flash.filters.BitmapFilterType;
 import flash.filters.ColorMatrixFilter;
@@ -74,7 +74,7 @@ class Filters {
 		
 		var passes = stream.readBits (4);
 		
-		#if !nme
+		#if (!nme && !openfl)
 		
 		var type = BitmapFilterType.OUTER;
 		
@@ -86,7 +86,7 @@ class Filters {
 				
 			} else {
 				
-				type.BitmapFilterType.INNER;
+				type = BitmapFilterType.INNER;
 				
 			}
 			
@@ -124,7 +124,7 @@ class Filters {
 			
 		}
 		
-		#if !nme
+		#if (!nme && !openfl)
 		
 		return new ColorMatrixFilter (matrix);
 		
@@ -159,7 +159,7 @@ class Filters {
 		var clamp = stream.readBool ();
 		var preserveAlpha = stream.readBool ();
 		
-		#if !nme
+		#if (!nme && !openfl)
 		
 		return new ConvolutionFilter (width, height, matrix, divisor, bias, preserveAlpha, clamp, defaultColor, defaultAlpha);
 		
@@ -245,7 +245,7 @@ class Filters {
 		
 		var passes = stream.readBits (4);
 		
-		#if !nme
+		#if (!nme && !openfl)
 		
 		var type = BitmapFilterType.OUTER;
 		
@@ -257,7 +257,7 @@ class Filters {
 				
 			} else {
 				
-				type.BitmapFilterType.INNER;
+				type = BitmapFilterType.INNER;
 				
 			}
 			
@@ -303,7 +303,7 @@ class Filters {
 		
 		var passes = stream.readBits (4);
 		
-		#if !nme
+		#if (!nme && !openfl)
 		
 		var type = BitmapFilterType.OUTER;
 		
@@ -315,7 +315,7 @@ class Filters {
 				
 			} else {
 				
-				type.BitmapFilterType.INNER;
+				type = BitmapFilterType.INNER;
 				
 			}
 			
